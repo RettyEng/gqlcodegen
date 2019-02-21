@@ -17,6 +17,10 @@ func typeT() *Token {
 	return &Token{Type: Type}
 }
 
+func enumT() *Token {
+	return &Token{Type: Enum}
+}
+
 func lParenT() *Token {
 	return &Token{Type: LParen}
 }

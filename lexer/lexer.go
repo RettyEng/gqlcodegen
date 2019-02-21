@@ -50,6 +50,8 @@ func convertValueToToken(value string) *Token {
 		return scalarT()
 	case "type":
 		return typeT()
+	case "enum":
+		return enumT()
 	case "(":
 		return lParenT()
 	case ")":

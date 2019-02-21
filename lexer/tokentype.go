@@ -6,6 +6,7 @@ const (
 	Schema   TokenType = iota // schema
 	Scalar                    // scalar
 	Type                      // type
+	Enum // enum
 	LParen                    // (
 	RParen                    // )
 	LBrace                    // {
