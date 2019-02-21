@@ -3,17 +3,15 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/RettyInc/gqlcodegen/lexer"
 	"os"
+
+	"github.com/RettyInc/gqlcodegen/lexer"
 )
 
 func main() {
 	r := bufio.NewReader(os.Stdin)
 	t := lexer.NewLexer(r)
 	for _, c := range t.Tokenize() {
-		if c == "\n" {
-			c = "\\n"
-		}
-		fmt.Printf("%v\t%x\n", c, c)
+		fmt.Printf("%10s: %s\n", c.Type, c.Value)
 	}
 }
