@@ -20,6 +20,8 @@ const (
 	Eq                        // =
 	Number                    // [0-9]+
 	String                    // ".*"
+	Null // null
+	Bool // true | false
 	Comment                   // #.*
 	Id
 )

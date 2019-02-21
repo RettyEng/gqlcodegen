@@ -3,81 +3,91 @@ package lexer
 type Token struct {
 	Type  TokenType
 	Value string
+	Line int
+	Column int
 }
 
-func schemaT() *Token {
-	return &Token{Type: Schema}
+func schemaT(line, column int) *Token {
+	return &Token{Line: line, Column: column, Type: Schema}
 }
 
-func scalarT() *Token {
-	return &Token{Type: Scalar}
+func scalarT(line, column int) *Token {
+	return &Token{Line: line, Column: column, Type: Scalar}
 }
 
-func typeT() *Token {
-	return &Token{Type: Type}
+func typeT(line, column int) *Token {
+	return &Token{Line: line, Column: column, Type: Type}
 }
 
-func enumT() *Token {
-	return &Token{Type: Enum}
+func enumT(line, column int) *Token {
+	return &Token{Line: line, Column: column, Type: Enum}
 }
 
-func lParenT() *Token {
-	return &Token{Type: LParen}
+func lParenT(line, column int) *Token {
+	return &Token{Line: line, Column: column, Type: LParen}
 }
 
-func rParenT() *Token {
-	return &Token{Type: RParen}
+func rParenT(line, column int) *Token {
+	return &Token{Line: line, Column: column, Type: RParen}
 }
 
-func lBraceT() *Token {
-	return &Token{Type: LBrace}
+func lBraceT(line, column int) *Token {
+	return &Token{Line: line, Column: column, Type: LBrace}
 }
 
-func rBraceT() *Token {
-	return &Token{Type: RBrace}
+func rBraceT(line, column int) *Token {
+	return &Token{Line: line, Column: column, Type: RBrace}
 }
 
-func lBracketT() *Token {
-	return &Token{Type: LBracket}
+func lBracketT(line, column int) *Token {
+	return &Token{Line: line, Column: column, Type: LBracket}
 }
 
-func rBracketT() *Token {
-	return &Token{Type: RBracket}
+func rBracketT(line, column int) *Token {
+	return &Token{Line: line, Column: column, Type: RBracket}
 
 }
 
-func newLineT() *Token {
-	return &Token{Type: NewLine}
+func newLineT(line, column int) *Token {
+	return &Token{Line: line, Column: column, Type: NewLine}
 }
 
-func colonT() *Token {
-	return &Token{Type: Colon}
+func colonT(line, column int) *Token {
+	return &Token{Line: line, Column: column, Type: Colon}
 }
 
-func commaT() *Token {
-	return &Token{Type: Comma}
+func commaT(line, column int) *Token {
+	return &Token{Line: line, Column: column, Type: Comma}
 }
 
-func notNullT() *Token {
-	return &Token{Type: NotNull}
+func notNullT(line, column int) *Token {
+	return &Token{Line: line, Column: column, Type: NotNull}
 }
 
-func eqT() *Token {
-	return &Token{Type: Eq}
+func eqT(line, column int) *Token {
+	return &Token{Line: line, Column: column, Type: Eq}
 }
 
-func numberT(value string) *Token {
-	return &Token{Type: Number, Value: value}
+func numberT(line, column int, value string) *Token {
+	return &Token{Line: line, Column: column, Type: Number, Value: value}
 }
 
-func stringT(value string) *Token {
-	return &Token{Type: String, Value: value}
+func stringT(line, column int, value string) *Token {
+	return &Token{Line: line, Column: column, Type: String, Value: value}
 }
 
-func commentT(value string) *Token {
-	return &Token{Type: Comment, Value: value}
+func boolT(line, column int, value string) *Token {
+	return &Token{Line: line, Column: column, Type: Bool, Value: value}
 }
 
-func idT(value string) *Token {
-	return &Token{Type: Id, Value: value}
+func nullT(line, column int) *Token {
+	return &Token{Line: line, Column: column, Type: Null}
+}
+
+func commentT(line, column int, value string) *Token {
+	return &Token{Line: line, Column: column, Type: Comment, Value: value}
+}
+
+func idT(line, column int, value string) *Token {
+	return &Token{Line: line, Column: column, Type: Id, Value: value}
 }

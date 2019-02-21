@@ -18,13 +18,17 @@ func NewTypeRef(
 	}
 }
 
-func (a *TypeRef) TypeVars() []*TypeRef {
+func (t *TypeRef) TypeVars() []*TypeRef {
 	var tvs []*TypeRef
-	for _, tv := range a.Children() {
+	for _, tv := range t.Children() {
 		tv, ok := tv.(*TypeRef)
 		if ok {
 			tvs = append(tvs, tv)
 		}
 	}
 	return tvs
+}
+
+func (t *TypeRef) IsNullable() bool {
+	return t.isNullable
 }

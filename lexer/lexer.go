@@ -33,63 +33,76 @@ func (t *Lexer) Tokenize() []*Token {
 	var tokens []*Token
 	runes := t.takeRunes()
 	cur := 0
+	line := 1
+	column := 1
 
 	for cur < len(runes) {
 		token, consumed := takeTokenValue(runes[cur:])
+		tokens = append(
+			tokens, convertValueToToken(string(token), line, column),
+		)
+		column += consumed
+		if r := runes[cur]; r == '\n' {
+			line++
+			column = 1
+		}
 		cur += consumed
-		tokens = append(tokens, convertValueToToken(string(token)))
 	}
 	return tokens
 }
 
-func convertValueToToken(value string) *Token {
+func convertValueToToken(value string, line, column int) *Token {
 	switch value {
 	case "schema":
-		return schemaT()
+		return schemaT(line, column)
 	case "scalar":
-		return scalarT()
+		return scalarT(line, column)
 	case "type":
-		return typeT()
+		return typeT(line, column)
 	case "enum":
-		return enumT()
+		return enumT(line, column)
+	case "true", "false":
+		return boolT(line, column, value)
+	case "null":
+		return nullT(line, column)
 	case "(":
-		return lParenT()
+		return lParenT(line, column)
 	case ")":
-		return rParenT()
+		return rParenT(line, column)
 	case "{":
-		return lBraceT()
+		return lBraceT(line, column)
 	case "}":
-		return rBraceT()
+		return rBraceT(line, column)
 	case "[":
-		return lBracketT()
+		return lBracketT(line, column)
 	case "]":
-		return rBracketT()
+		return rBracketT(line, column)
 	case "\n":
-		return newLineT()
+		return newLineT(line, column)
 	case ":":
-		return colonT()
+		return colonT(line, column)
 	case ",":
-		return commaT()
+		return commaT(line, column)
 	case "!":
-		return notNullT()
+		return notNullT(line, column)
 	case "=":
-		return eqT()
+		return eqT(line, column)
 	}
-	r := regexp.MustCompile(`^\d+$`)
+	r := regexp.MustCompile(`^\d+(\.\d+)?$`)
 	if r.MatchString(value) {
-		return numberT(value)
+		return numberT(line, column, value)
 	}
 	r = regexp.MustCompile(`^".*"$`)
 	if r.MatchString(value) {
-		return stringT(value)
+		return stringT(line, column, value)
 	}
 	r = regexp.MustCompile(`^[a-zA-Z0-9_\-]+$`)
 	if r.MatchString(value) {
-		return idT(value)
+		return idT(line, column, value)
 	}
 	r = regexp.MustCompile(`^#.+$`)
 	if r.MatchString(value) {
-		return commentT(value)
+		return commentT(line, column, value)
 	}
 	panic(errors.New(fmt.Sprintf(`failed to parse "%s"`, value)))
 }
