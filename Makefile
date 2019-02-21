@@ -1,10 +1,10 @@
 BUILD_DIR:=build
-STRINGER_SRC:=$(shell grep -lr '//go:generate stringer' | grep '\.go$')
-STRING_GO:=$(putsubst %.go, %_string.go, $(STRINGER_SRC))
+STRINGER_SRC:=$(shell grep -lr '//go:generate stringer' | grep '\.go$$')
+STRING_GO:=$(patsubst %.go, %_string.go, $(STRINGER_SRC))
 SRC:=$(shell find . -name '*.go')
 .PHONY: all clean
 
-all: $(BUILD_DIR)/gqlcodegen;
+all: $(BUILD_DIR)/gqlcodegen
 
 clean:
 	rm $(STRING_GO)
