@@ -1,1 +1,1 @@
-module github.com/rettyinc/gqlcodegen
+module github.com/RettyInc/gqlcodegen
