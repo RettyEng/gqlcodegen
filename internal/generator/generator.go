@@ -89,5 +89,3 @@ func (g *Generator) WriteToFile(path string) {
 		log.Fatal(e)
 	}
 }
-
-
