@@ -16,12 +16,12 @@ type Package struct {
 }
 
 type Config struct {
-	EnumTypes map[string]struct{}
-	ScalarTypes map[string]struct{}
-	ResolverTypes map[string]struct{}
+	EnumTypes         map[string]struct{}
+	ScalarTypes       map[string]struct{}
+	ResolverTypes     map[string]struct{}
 	EnumPackagePrefix string
-	ScalarPackagePrefix string
-	Package *Package
+	ScalarPackage     string
+	Package           *Package
 }
 
 type Generator struct {
@@ -55,6 +55,13 @@ func (g *Generator) GenerateSource(syntax ast.Ast) {
 
 func (g *Generator) Printf(fmtStr string, args ...interface{}) {
 	_, e := fmt.Fprintf(g.buff, fmtStr, args...)
+	if e != nil {
+		log.Fatal(e)
+	}
+}
+
+func (g *Generator) Println(args ...interface{}) {
+	_, e := fmt.Fprintln(g.buff, args...)
 	if e != nil {
 		log.Fatal(e)
 	}

@@ -16,6 +16,7 @@ import (
 
 var (
 	enumPackagePrefix = flag.String("enum-pkg-prefix", "", "")
+	scalarPackage = flag.String("scalar-pkg", "", "")
 	generateTarget = flag.String("target", "", "comma separated")
 	schema = flag.String("schema", "", "comma separated")
 )
@@ -57,32 +58,39 @@ func main() {
 	for _, r := range ast.Types() {
 		resolver[r.Name()] = struct{}{}
 	}
+	fmt.Printf("%v", resolver)
 
 	genCfg := &generator.Config{
 		ScalarTypes: scalar,
 		ResolverTypes: resolver,
 		EnumTypes:enum,
-		EnumPackagePrefix:"",
-		ScalarPackagePrefix:"",
+		EnumPackagePrefix: *enumPackagePrefix,
+		ScalarPackage: *scalarPackage,
 		Package:&generator.Package{
 			Name:pkg.Name,
 		},
 	}
 
 	gen := generator.NewGenerator(genCfg)
-	for _, e := range ast.Enums() {
-		writeEnum(gen, e)
-		gen.ClearBuff()
+	for _, e := range ast.Types() {
+		writeType(gen, e)
 	}
-
 }
 
 func writeEnum(g *generator.Generator,def *ast.EnumDef) {
 	g.GenerateSource(def)
+	defer g.ClearBuff()
 	g.Format()
 	dirName := "./" + strings.ToLower(def.Name())
 	_ = os.Mkdir(dirName, 0755)
 	g.WriteToFile(dirName + "/" + strings.ToLower(def.Name()) + ".go")
+}
+
+func writeType(g *generator.Generator, def *ast.TypeDef) {
+	g.GenerateSource(def)
+	defer g.ClearBuff()
+	g.Format()
+	g.WriteToFile(strings.ToLower(def.Name()) + ".go")
 }
 
 func loadAst(schemaPath string) *ast.Root {
@@ -92,77 +100,4 @@ func loadAst(schemaPath string) *ast.Root {
 	}
 	defer f.Close()
 	return parser.NewParser(bufio.NewReader(f)).Parse()
-}
-
-var scalars map[string]struct{} = map[string]struct{}{}
-var enums map[string]struct{} = map[string]struct{}{}
-
-func printTypes(t *ast.TypeDef) {
-	body := ""
-	for _,f := range t.Fields() {
-		body += "\t"
-		n := f.Name()
-		n = strings.ToUpper(n[0:1]) + n[1:]
-		body += n
-		body += "("
-		a := f.Args()
-		if len(a) > 0 {
-			body += "context.Context, " + t.Name() + "_" + n + "_Args"
-		}
-		body += ") "
-		body += convertTypeName(f.Type()) + "\n"
-	}
-	fmt.Printf(`
-type %s interface {
-%s
-}
-`, t.Name(), body)
-}
-
-func printEnum(t *ast.EnumDef) {
-	body := ""
-	iota := true
-	for _, e := range t.Entries() {
-		body += "\t"
-		body += e.Name()
-		if iota {
-			body += " " + t.Name() + " = iota"
-			iota = false
-		}
-		body += "\n"
-	}
-	fmt.Printf(`
-type %s int
-const (
-%s
-)
-`, t.Name(), body)
-}
-
-func convertTypeName(t *ast.TypeRef) string {
-	n := t.Name()
-	if _, ok := scalars[n]; ok {
-		n = "scalar." + t.Name()
-	} else if _, ok := enums[n]; ok {
-		n = "enum." + strings.ToLower(t.Name()) + "." + t.Name()
-	}
-
-	switch n {
-	case "Int":
-		n = "int"
-	case "String":
-		n = "string"
-	case "Boolean":
-		n = "bool"
-	case "[]":
-		n = "[]" + convertTypeName(t.TypeVars()[0])
-	}
-	if n == t.Name() {
-		return n
-	}
-	p := ""
-	if t.IsNullable() {
-		p = "*"
-	}
-	return p + n
 }
