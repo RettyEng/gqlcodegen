@@ -8,7 +8,11 @@ import (
 )
 
 type QueryResolver interface {
+
+	// Return value of Truck is nullable
 	Truck(context.Context, QueryResolver_Truck_Arg) TruckResolver
+
+	// Return value of Garage is nullable
 	Garage(context.Context, QueryResolver_Garage_Arg) GarageResolver
 }
 

@@ -6,8 +6,12 @@ import (
 )
 
 type DriverResolver interface {
+
+	// Return value of LicenceNumber is nullable
 	LicenceNumber() *string
 	Name() string
+
+	// Return value of MiddleName is nullable
 	MiddleName() *string
 	FamilyName() string
 	IsOnDuty() bool

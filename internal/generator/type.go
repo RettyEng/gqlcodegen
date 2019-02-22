@@ -46,7 +46,12 @@ func generateTypeDefinition(g *Generator, def *ast.TypeDef) {
 }
 
 func generateField(g *Generator, f *ast.TypeFieldDef, t *ast.TypeDef) {
-	g.Printf("%s(", capitalizeFirst(f.Name()))
+	name := capitalizeFirst(f.Name())
+	if f.Type().IsNullable() {
+		g.Println()
+		g.Printf("// Return value of %s is nullable\n", name)
+	}
+	g.Printf("%s(", name)
 	if len(f.Args()) > 0 {
 		g.Printf(
 			"context.Context, %s",
