@@ -1,0 +1,69 @@
+schema {
+    query: Query
+}
+
+# ------------------------
+# Scalar definition
+# ------------------------
+
+scalar RegistrationNumber
+scalar Uint32
+scalar Cursor
+
+# ------------------------
+# Type definition
+# ------------------------
+
+type Query {
+    truck(number: RegistrationNumber = null): Truck
+    garage(id: Uint32!): Garage
+}
+
+type Garage {
+    id: Uint32!
+    trucks(size: Uint32! = 20, cursor: Cursor = null): [Truck!]!
+    drivers(size: Uint32! = 20, class: [Class!]! = [ELITE, KING_OF_ROAD], cursor: Cursor = null): [Driver!]!
+    trailers(size: Uint32! = 20, cursor: Cursor = null): [Trailer!]!
+}
+
+type Truck {
+    maker: Maker!
+    number: RegistrationNumber!
+    capacity: Int!
+}
+
+type Trailer {
+    length: Int!
+    capacity: Int!
+}
+
+type Driver {
+    licenceNumber: String # Some drivers do not have licence
+    name: String!
+    middleName: String
+    familyName: String!
+    isOnDuty: Boolean!
+    class: Class!
+}
+
+# ------------------------
+# Enum definition
+# ------------------------
+
+enum Maker {
+    SCANIA
+    DAF
+    MAN
+    RENAULT
+    MERCEDES
+    IVECO
+    VOLVO
+    # HINO
+}
+
+enum Class {
+    ROOKIE
+    ELITE
+    KING_OF_ROAD
+}
+

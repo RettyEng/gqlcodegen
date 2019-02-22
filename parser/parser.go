@@ -149,13 +149,26 @@ func parseFieldArgs(ts []*lexer.Token) ([]*ast.FieldArgDef, int) {
 			cur++
 			validateTokenTypeOrErr(
 				ts[cur], lexer.Number, lexer.String, lexer.Bool,
-				lexer.LBracket, lexer.Id,
+				lexer.LBracket, lexer.Id, lexer.Null,
 			)
 			if ts[cur].Type == lexer.LBracket {
 				cur++
+				values := ""
+				for ts[cur].Type != lexer.RBracket {
+					if ts[cur].Type == lexer.Comma {
+						values += ","
+					} else {
+						validateTokenTypeOrErr(
+							ts[cur], lexer.Number, lexer.String, lexer.Bool,
+							lexer.LBracket, lexer.Id, lexer.Null,
+						)
+						values += ts[cur].Value
+					}
+					cur++
+				}
 				validateTokenTypeOrErr(ts[cur], lexer.RBracket)
 				cur++
-				defaultValue = ast.NewFieldArgDefault("[]")
+				defaultValue = ast.NewFieldArgDefault("[" + values + "]")
 			} else {
 				defaultValue = ast.NewFieldArgDefault(ts[cur].Value)
 				cur++

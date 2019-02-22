@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"fmt"
 	"github.com/RettyInc/gqlcodegen/ast"
 	"log"
 	"path"
@@ -132,7 +133,6 @@ func typeNameMap(def *ast.TypeDef) map[string]struct{} {
 }
 
 func generateImportSection(g *Generator, def *ast.TypeDef) {
-	g.Println("import(")
 	typesMap := typeNameMap(def)
 	needContext := false
 	for _, f := range def.Fields() {
@@ -141,20 +141,37 @@ func generateImportSection(g *Generator, def *ast.TypeDef) {
 			break
 		}
 	}
+	var imported []string
 	if needContext {
-		g.Println("\"context\"")
-		g.Println()
+		imported = append(imported, "\"context\"")
 	}
 	for k := range g.Config().EnumTypes {
 		if _, ok := typesMap[k]; ok {
-			g.Printf("\"%s\"\n", path.Join(g.Config().EnumPackagePrefix, strings.ToLower(k)))
+			imported = append(
+				imported,
+				fmt.Sprintf("\"%s\"", path.Join(g.Config().EnumPackagePrefix, strings.ToLower(k))),
+			)
 		}
 	}
 	for k := range g.Config().ScalarTypes {
 		if _, ok := typesMap[k]; ok {
-			g.Printf("\"%s\"\n", strings.Trim(g.Config().ScalarPackage, "/"))
+			imported = append(
+				imported,
+				fmt.Sprintf("\"%s\"", strings.Trim(g.Config().ScalarPackage, "/")),
+			)
 			break
 		}
 	}
-	g.Println(")")
+
+	if len(imported) > 0 {
+		g.Println("import(")
+		for _, p := range imported {
+			g.Println(p)
+			if p == "\"context\"" {
+				g.Println()
+			}
+		}
+		g.Println(")")
+	}
+
 }
