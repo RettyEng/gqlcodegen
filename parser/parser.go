@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+
 	"github.com/RettyInc/gqlcodegen/ast"
 	"github.com/RettyInc/gqlcodegen/lexer"
 )
@@ -133,7 +134,7 @@ func parseTypeBody(ts []*lexer.Token) ([]ast.Ast, int) {
 func parseFieldArgs(ts []*lexer.Token) ([]*ast.FieldArgDef, int) {
 	var args []*ast.FieldArgDef
 	cur := 0
-	for  {
+	for {
 		if ts[cur].Type == lexer.RParen {
 			break
 		}

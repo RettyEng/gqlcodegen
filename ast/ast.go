@@ -9,8 +9,8 @@ type Ast interface {
 }
 
 type ast struct {
-	name string
-	astType asttype.AstType
+	name     string
+	astType  asttype.AstType
 	children []Ast
 }
 

@@ -1,8 +1,9 @@
 package generator
 
 import (
-	"github.com/RettyInc/gqlcodegen/ast"
 	"strings"
+
+	"github.com/RettyInc/gqlcodegen/ast"
 )
 
 func generateEnum(g *Generator, def *ast.EnumDef) {
@@ -35,10 +36,8 @@ func generateEnumConstBody(g *Generator, def *ast.EnumDef) {
 	for i, e := range entries {
 		g.Printf("%s", capitalizeFirst(e.Name()))
 		if i == 0 {
-			g.Printf(" %s = iota", capitalizeFirst( def.Name()))
+			g.Printf(" %s = iota", capitalizeFirst(def.Name()))
 		}
 		g.Println()
 	}
 }
-
-

@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/RettyInc/gqlcodegen/ast"
 	"go/format"
 	"log"
 	"os"
+
+	"github.com/RettyInc/gqlcodegen/ast"
 )
 
 type Package struct {
@@ -80,7 +81,7 @@ func (g *Generator) ClearBuff() {
 }
 
 func (g *Generator) WriteToFile(path string) {
-	f, e := os.OpenFile(path,os.O_CREATE | os.O_TRUNC | os.O_RDWR, os.ModeAppend | 0644)
+	f, e := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_RDWR, os.ModeAppend|0644)
 	if e != nil {
 		log.Fatal(e)
 	}

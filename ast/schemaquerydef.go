@@ -2,6 +2,7 @@ package ast
 
 import (
 	"errors"
+
 	"github.com/RettyInc/gqlcodegen/ast/asttype"
 )
 

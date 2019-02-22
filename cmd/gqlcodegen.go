@@ -3,34 +3,35 @@ package main
 import (
 	"bufio"
 	"flag"
-	"github.com/RettyInc/gqlcodegen/ast"
-	"github.com/RettyInc/gqlcodegen/internal/generator"
-	"github.com/RettyInc/gqlcodegen/parser"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/RettyInc/gqlcodegen/ast"
+	"github.com/RettyInc/gqlcodegen/internal/generator"
+	"github.com/RettyInc/gqlcodegen/parser"
 )
 
 var (
-	fileSuffix = flag.String("suffix", "_gql", "")
+	fileSuffix        = flag.String("suffix", "_gql", "")
 	enumPackagePrefix = flag.String("enum-pkg-prefix", "", "")
-	scalarPackage = flag.String("scalar-pkg", "", "")
-	generateTarget = flag.String("target", "", "comma separated")
-	schema = flag.String("schema", "", "comma separated")
+	scalarPackage     = flag.String("scalar-pkg", "", "")
+	generateTarget    = flag.String("target", "", "comma separated")
+	schema            = flag.String("schema", "", "comma separated")
 )
 
 func createGenerator(
 	packageName, packagePath string, root *ast.Root,
 ) *generator.Generator {
 	conf := &generator.Config{
-		EnumTypes:enumerateEnums(root),
-		ScalarTypes:enumerateScalars(root),
-		ResolverTypes:enumerateResolverTypes(root),
-		EnumPackagePrefix:*enumPackagePrefix,
-		ScalarPackage:*scalarPackage,
-		Package:&generator.Package{
+		EnumTypes:         enumerateEnums(root),
+		ScalarTypes:       enumerateScalars(root),
+		ResolverTypes:     enumerateResolverTypes(root),
+		EnumPackagePrefix: *enumPackagePrefix,
+		ScalarPackage:     *scalarPackage,
+		Package: &generator.Package{
 			Name: packageName,
 			Path: packagePath,
 		},
@@ -96,14 +97,14 @@ func generate(g *generator.Generator, root *ast.Root) {
 	}
 }
 
-func writeEnum(g *generator.Generator,def *ast.EnumDef) {
+func writeEnum(g *generator.Generator, def *ast.EnumDef) {
 	g.GenerateSource(def)
 	defer g.ClearBuff()
 	g.Format()
 	dirName := path.Join(g.Config().Package.Path, strings.ToLower(def.Name()))
 	_ = os.Mkdir(dirName, 0755)
 	g.WriteToFile(
-		path.Join(dirName, strings.ToLower(def.Name()) + *fileSuffix + ".go"),
+		path.Join(dirName, strings.ToLower(def.Name())+*fileSuffix+".go"),
 	)
 }
 
@@ -112,7 +113,7 @@ func writeType(g *generator.Generator, def *ast.TypeDef) {
 	defer g.ClearBuff()
 	g.Format()
 	g.WriteToFile(
-		path.Join(g.Config().Package.Path, strings.ToLower(def.Name()) + *fileSuffix + ".go"),
+		path.Join(g.Config().Package.Path, strings.ToLower(def.Name())+*fileSuffix+".go"),
 	)
 }
 

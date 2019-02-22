@@ -6,7 +6,7 @@ const (
 	Schema   TokenType = iota // schema
 	Scalar                    // scalar
 	Type                      // type
-	Enum // enum
+	Enum                      // enum
 	LParen                    // (
 	RParen                    // )
 	LBrace                    // {
@@ -20,8 +20,8 @@ const (
 	Eq                        // =
 	Number                    // [0-9]+
 	String                    // ".*"
-	Null // null
-	Bool // true | false
+	Null                      // null
+	Bool                      // true | false
 	Comment                   // #.*
 	Id
 )

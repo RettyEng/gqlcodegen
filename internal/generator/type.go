@@ -2,10 +2,11 @@ package generator
 
 import (
 	"fmt"
-	"github.com/RettyInc/gqlcodegen/ast"
 	"log"
 	"path"
 	"strings"
+
+	"github.com/RettyInc/gqlcodegen/ast"
 )
 
 func generateType(g *Generator, def *ast.TypeDef) {
@@ -71,7 +72,7 @@ func convertResolverName(name string) string {
 
 func refToString(g *Generator, ref *ast.TypeRef) string {
 	n := ref.Name()
-	if _, ok := g.Config().ResolverTypes[n] ; ok {
+	if _, ok := g.Config().ResolverTypes[n]; ok {
 		return convertResolverName(ref.Name())
 	}
 	if _, ok := g.Config().EnumTypes[n]; ok {

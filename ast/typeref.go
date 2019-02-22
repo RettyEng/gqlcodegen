@@ -13,7 +13,7 @@ func NewTypeRef(
 	isNullable bool,
 ) *TypeRef {
 	return &TypeRef{
-		ast: newAst(asttype.TypeRef, typeName, typeVars),
+		ast:        newAst(asttype.TypeRef, typeName, typeVars),
 		isNullable: isNullable,
 	}
 }

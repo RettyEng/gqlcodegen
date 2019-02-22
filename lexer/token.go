@@ -1,9 +1,9 @@
 package lexer
 
 type Token struct {
-	Type  TokenType
-	Value string
-	Line int
+	Type   TokenType
+	Value  string
+	Line   int
 	Column int
 }
 

@@ -48,4 +48,3 @@ func (r *Root) Enums() []*EnumDef {
 	}
 	return es
 }
-
