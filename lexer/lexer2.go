@@ -27,16 +27,16 @@ func NewLexer(r io.Reader) *Lexer {
 
 func (l *Lexer) next() *token.Token {
 	s := l.scanner
-	takeWhileAndAppend := func (t token.Type, m ...Matcher) *token.Token {
-		v, c, l :=  s.TakeWhileMatch(m[0])
+	takeWhileAndAppend := func(t token.Type, m ...Matcher) *token.Token {
+		v, c, l := s.TakeWhileMatch(m[0])
 		for _, m := range m[1:] {
 			tail, _, _ := s.TakeWhileMatch(m)
 			v += tail
 		}
 		return token.NewToken(t, v, c, l)
 	}
-	takeAndAppend := func (t token.Type, m ...Matcher) *token.Token {
-		v, c, l :=  s.Take(m[0])
+	takeAndAppend := func(t token.Type, m ...Matcher) *token.Token {
+		v, c, l := s.Take(m[0])
 		return token.NewToken(t, v, c, l)
 	}
 
@@ -93,11 +93,11 @@ func (l *Lexer) next() *token.Token {
 
 func (l *Lexer) Next() *token.Token {
 	ignored := map[token.Type]struct{}{
-		token.TypeUnicodeBom: {},
-		token.TypeWhiteSpace: {},
+		token.TypeUnicodeBom:     {},
+		token.TypeWhiteSpace:     {},
 		token.TypeLineTerminator: {},
-		token.TypeComment: {},
-		token.TypeComma: {},
+		token.TypeComment:        {},
+		token.TypeComma:          {},
 	}
 
 	for {
@@ -105,7 +105,7 @@ func (l *Lexer) Next() *token.Token {
 		if t == nil {
 			return nil
 		}
-		if _, isIgnored := ignored[t.Type()]; !isIgnored{
+		if _, isIgnored := ignored[t.Type()]; !isIgnored {
 			return t
 		}
 	}
@@ -140,11 +140,11 @@ func (l *Lexer) takeNumber() *token.Token {
 	if len([]rune(fracHead)) != 0 || len([]rune(exponentHead)) != 0 {
 		return token.NewToken(
 			token.TypeFloatVal,
-			negativeSign + intPart + fracHead + fracPart + exponentHead + exponentPart,
+			negativeSign+intPart+fracHead+fracPart+exponentHead+exponentPart,
 			line, col,
 		)
 	}
-	return token.NewToken(token.TypeIntVal, negativeSign + intPart, line, col)
+	return token.NewToken(token.TypeIntVal, negativeSign+intPart, line, col)
 }
 
 func (l *Lexer) takeBlockString() *token.Token {

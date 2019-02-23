@@ -10,7 +10,7 @@ Not
  *********************************************************/
 
 type not struct {
- 	matcher Matcher
+	matcher Matcher
 }
 
 func Not(m Matcher) Matcher {
@@ -76,7 +76,6 @@ func (u *union) MatchCount(runes []rune) int {
 Str
  *********************************************************/
 
-
 type strMatch struct {
 	s string
 }
@@ -108,10 +107,9 @@ func (sm *strMatch) MatchCount(runes []rune) int {
 Charset
  *********************************************************/
 
-
 type charset struct {
 	from rune
-	to rune
+	to   rune
 }
 
 type F struct {
@@ -124,8 +122,8 @@ func From(r rune) *F {
 
 func (f *F) To(r rune) Matcher {
 	return &charset{
-				from: f.r,
-				to: r,
+		from: f.r,
+		to:   r,
 	}
 }
 
@@ -149,7 +147,7 @@ Charsets
  *********************************************************/
 
 var (
-	digit = From('0').To('9')
+	digit        = From('0').To('9')
 	nonZeroDigit = From('1').To('9')
 
 	unicodeBom = Str("\ufeff")
@@ -170,17 +168,17 @@ var (
 	nameTail = Union(nameHead, digit)
 
 	negative = Str("-")
-	intVal = digit
+	intVal   = digit
 
 	fractionalPartHead = Str(".")
-	exponent = StrUnion("e", "E")
-	sign = Union(Str("+"), negative)
+	exponent           = StrUnion("e", "E")
+	sign               = Union(Str("+"), negative)
 
-	strStart = Str("\"")
-	strEnd = Str("\"")
+	strStart             = Str("\"")
+	strEnd               = Str("\"")
 	strUnicodeEscapeHead = Str(`\u`)
-	hex = Union(From(0).To(9), From('A').To('F'), From('a').To('f'))
-	strEscape = StrUnion(
+	hex                  = Union(From(0).To(9), From('A').To('F'), From('a').To('f'))
+	strEscape            = StrUnion(
 		`\\`, `\"`, `\/`, `\b`, `\f`, `\n`, `\r`, `\t`,
 	)
 	strChar = Union(
@@ -191,6 +189,6 @@ var (
 	)
 
 	blockStrStart = Str(`"""`)
-	blockStrEnd = Str(`"""`)
-	blockStrChar = Union(Str(`\"""`), Not(Str(`"""`)))
+	blockStrEnd   = Str(`"""`)
+	blockStrChar  = Union(Str(`\"""`), Not(Str(`"""`)))
 )

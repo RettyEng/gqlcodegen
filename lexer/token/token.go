@@ -2,9 +2,9 @@ package token
 
 type Token struct {
 	tokenType Type
-	value string
-	line int
-	col int
+	value     string
+	line      int
+	col       int
 }
 
 func NewToken(t Type, v string, l, c int) *Token {

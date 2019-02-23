@@ -6,8 +6,8 @@ const (
 )
 
 type Scanner struct {
-	line int
-	col int
+	line  int
+	col   int
 	runes []rune
 }
 
@@ -76,7 +76,7 @@ func (s *Scanner) Pop() (rune, int, int) {
 func (s *Scanner) PopN(n int) ([]rune, int, int) {
 	l, c := s.LineCol()
 	rs := make([]rune, n)
-	for i:=0; i<n; i++ {
+	for i := 0; i < n; i++ {
 		r, _, _ := s.Pop()
 		rs[i] = r
 	}
