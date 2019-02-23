@@ -11,5 +11,5 @@ type DefineEnumValueExpression struct {
 }
 
 func (d *DefineEnumValueExpression) Eval(enum *gql.Enum) {
-	enum.Name = d.name.Eval()
+	enum.Values = append(enum.Values, &gql.EnumValue{Name: d.name.Eval()})
 }

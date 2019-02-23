@@ -1,6 +1,10 @@
 package gql
 
-import "github.com/RettyInc/gqlcodegen/ast2/directive"
+import (
+	"strings"
+
+	"github.com/RettyInc/gqlcodegen/ast2/directive"
+)
 
 type TypeSystem struct {
 	Schema           *Schema
@@ -63,6 +67,7 @@ type Directive struct {
 }
 
 type EnumValue struct {
+	Name string
 }
 
 type ObjectField struct {
@@ -74,15 +79,57 @@ type ObjectField struct {
 }
 
 type DirectiveRef struct {
+	Name string
+	Args map[string]Value
 }
 
 type TypeRef struct {
+	InnerType  *TypeRef
+	Name       string
+	IsNullable bool
+}
+
+type Value interface {
+	Type() *TypeRef
+	Value() string
+	Children() []Value
+}
+type ValueImpl struct {
+	typeRef *TypeRef
+	value   string
+}
+
+func (v *ValueImpl) Type() *TypeRef {
+	return v.typeRef
+}
+func (v *ValueImpl) Value() string {
+	return v.Value()
+}
+func (v *ValueImpl) Children() []Value {
+	return nil
 }
 
 type List struct {
+	typeRef *TypeRef
+	value   string
+	child   []Value
 }
 
-type Value struct {
+func (l *List) Type() *TypeRef {
+	return l.typeRef
+}
+func (l *List) Value() string {
+	if l.value == "null" {
+		return "null"
+	}
+	var child []string
+	for _, c := range l.child {
+		child = append(child, c.Value())
+	}
+	return "[" + strings.Join(child, ", ") + "]"
+}
+func (l *List) Children() []Value {
+	return l.child
 }
 
 type InputObject struct {
@@ -97,7 +144,5 @@ type InputValue struct {
 	Name        string
 	Directives  []*DirectiveRef
 	Type        *TypeRef
-	Default     *Value
+	Default     Value
 }
-
-type Name string
