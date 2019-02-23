@@ -10,11 +10,11 @@ import (
 )
 
 type Parser struct {
-	lexer *lexer.Lexer
+	lexer *lexer.Lexer_
 }
 
 func NewParser(reader *bufio.Reader) *Parser {
-	return &Parser{lexer.NewLexer(reader)}
+	return &Parser{lexer.NewLexer_(reader)}
 }
 
 func (p *Parser) tokens() []*lexer.Token {

@@ -19,17 +19,26 @@ func NewScanner(rs []rune) *Scanner {
 	}
 }
 
-func (s *Scanner) startsWith(str string) bool {
-	for i, r := range []rune(str) {
-		if s.runes[i] != r {
-			return false
-		}
-	}
-	return true
+func (s *Scanner) Take(matcher Matcher) (string, int, int) {
+	c := matcher.MatchCount(s.runes)
+	r, line, col := s.PopN(c)
+	return string(r), line, col
 }
 
-func (s *Scanner) startsWithCharset(cs *Charset) bool {
-	return cs.Contains(s.runes[0])
+func (s *Scanner) TakeWhileMatch(matcher Matcher) (string, int, int) {
+	var ret []rune
+	line, col := s.LineCol()
+	c := matcher.MatchCount(s.runes)
+	for c != 0 {
+		r, _, _ := s.PopN(c)
+		ret = append(ret, r...)
+		c = matcher.MatchCount(s.runes)
+	}
+	return string(ret), line, col
+}
+
+func (s *Scanner) StartsWith(m Matcher) bool {
+	return m.HeadMatches(s.runes)
 }
 
 func (s *Scanner) HasNext() bool {
@@ -43,7 +52,7 @@ func (s *Scanner) updateLineCol(popped rune) {
 		s.col = colInit
 		return
 	case '\r':
-		if !s.startsWith("\n") {
+		if !s.StartsWith(Str("\n")) {
 			s.line++
 			s.col = colInit
 			return

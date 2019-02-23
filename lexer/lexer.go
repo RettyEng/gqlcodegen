@@ -7,15 +7,15 @@ import (
 	"regexp"
 )
 
-type Lexer struct {
+type Lexer_ struct {
 	buff *bufio.Reader
 }
 
-func NewLexer(r *bufio.Reader) *Lexer {
-	return &Lexer{buff: r}
+func NewLexer_(r *bufio.Reader) *Lexer_ {
+	return &Lexer_{buff: r}
 }
 
-func (t *Lexer) takeRunes() []rune {
+func (t *Lexer_) takeRunes() []rune {
 	runes := make([]rune, 0)
 	for {
 		var r rune
@@ -29,7 +29,7 @@ func (t *Lexer) takeRunes() []rune {
 	return runes
 }
 
-func (t *Lexer) Tokenize() []*Token {
+func (t *Lexer_) Tokenize() []*Token {
 	var tokens []*Token
 	runes := t.takeRunes()
 	cur := 0
