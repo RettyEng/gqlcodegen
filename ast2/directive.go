@@ -11,9 +11,9 @@ type DirectiveInternalExpression interface {
 }
 
 type DefineDirectiveLocationExpression struct {
-	locations []directive.Location
+	Location directive.Location
 }
 
 func (d *DefineDirectiveLocationExpression) Eval(direc *gql.Directive) {
-	direc.Location = d.locations
+	direc.Location = append(direc.Location, d.Location)
 }

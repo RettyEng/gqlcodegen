@@ -7,8 +7,17 @@ import (
 )
 
 type TopLevel struct {
-	expressions []DefinitionExpression
+	Expressions []DefinitionExpression
 }
+
+func (t *TopLevel) Eval() *gql.TypeSystem {
+	sys := gql.NewTypeSystem()
+	for _, e := range t.Expressions {
+		e.Eval(sys)
+	}
+	return sys
+}
+
 type DefinitionExpression interface {
 	Eval(system *gql.TypeSystem)
 }
@@ -30,13 +39,13 @@ func evalInputValues(exp []InputValueExpression) []*gql.InputValue {
 }
 
 type DefineSchemaExpression struct {
-	directiveExpressions []DirectiveExpression
-	expressions          []SchemaInternalExpression
+	DirectiveExpressions []DirectiveExpression
+	Expressions          []SchemaInternalExpression
 }
 
 func (d *DefineSchemaExpression) Eval(system *gql.TypeSystem) {
-	system.Schema.Directives = evalDirectives(d.directiveExpressions)
-	for _, e := range d.expressions {
+	system.Schema.Directives = evalDirectives(d.DirectiveExpressions)
+	for _, e := range d.Expressions {
 		e.Eval(system.Schema)
 	}
 }
@@ -55,16 +64,16 @@ func (e *ExtendSchemaExpression) Eval(system *gql.TypeSystem) {
 }
 
 type DefineScalarExpression struct {
-	descriptionExpression DescriptionExpression
-	nameExpression        NameExpression
-	directiveExpressions  []DirectiveExpression
+	DescriptionExpression DescriptionExpression
+	NameExpression        NameExpression
+	DirectiveExpressions  []DirectiveExpression
 }
 
 func (d *DefineScalarExpression) Eval(system *gql.TypeSystem) {
-	system.ScalarTypes[d.nameExpression.Eval()] = &gql.Scalar{
-		Description: d.descriptionExpression.Eval(),
-		Name:        d.nameExpression.Eval(),
-		Directives:  evalDirectives(d.directiveExpressions),
+	system.ScalarTypes[d.NameExpression.Eval()] = &gql.Scalar{
+		Description: d.DescriptionExpression.Eval(),
+		Name:        d.NameExpression.Eval(),
+		Directives:  evalDirectives(d.DirectiveExpressions),
 	}
 }
 
@@ -83,22 +92,22 @@ func (e *ExtendScalarExpression) Eval(system *gql.TypeSystem) {
 }
 
 type DefineObjectExpression struct {
-	descriptionExpression DescriptionExpression
-	nameExpression        NameExpression
-	directiveExpressions  []DirectiveExpression
-	objectExpression      []ObjectInternalExpression
+	DescriptionExpression DescriptionExpression
+	NameExpression        NameExpression
+	DirectiveExpressions  []DirectiveExpression
+	ObjectExpression      []ObjectInternalExpression
 }
 
 func (d *DefineObjectExpression) Eval(system *gql.TypeSystem) {
 	obj := &gql.Object{
-		Description: d.descriptionExpression.Eval(),
-		Name:        d.nameExpression.Eval(),
-		Directives:  evalDirectives(d.directiveExpressions),
+		Description: d.DescriptionExpression.Eval(),
+		Name:        d.NameExpression.Eval(),
+		Directives:  evalDirectives(d.DirectiveExpressions),
 	}
-	for _, e := range d.objectExpression {
+	for _, e := range d.ObjectExpression {
 		e.Eval(obj)
 	}
-	system.ObjectTypes[d.nameExpression.Eval()] = obj
+	system.ObjectTypes[d.NameExpression.Eval()] = obj
 }
 
 type ExtendObjectExpression struct {
@@ -121,22 +130,22 @@ func (e *ExtendObjectExpression) Eval(system *gql.TypeSystem) {
 }
 
 type DefineInterfaceExpression struct {
-	descriptionExpression DescriptionExpression
-	nameExpression        NameExpression
-	directiveExpressions  []DirectiveExpression
-	interfaceExpression   []InterfaceInternalExpression
+	DescriptionExpression DescriptionExpression
+	NameExpression        NameExpression
+	DirectiveExpressions  []DirectiveExpression
+	InterfaceExpression   []InterfaceInternalExpression
 }
 
 func (d *DefineInterfaceExpression) Eval(system *gql.TypeSystem) {
 	i := &gql.Interface{
-		Description: d.descriptionExpression.Eval(),
-		Name:        d.nameExpression.Eval(),
-		Directives:  evalDirectives(d.directiveExpressions),
+		Description: d.DescriptionExpression.Eval(),
+		Name:        d.NameExpression.Eval(),
+		Directives:  evalDirectives(d.DirectiveExpressions),
 	}
-	for _, exp := range d.interfaceExpression {
+	for _, exp := range d.InterfaceExpression {
 		exp.Eval(i)
 	}
-	system.InterfaceTypes[d.nameExpression.Eval()] = i
+	system.InterfaceTypes[d.NameExpression.Eval()] = i
 }
 
 type ExtendInterfaceExpression struct {
@@ -158,22 +167,22 @@ func (e *ExtendInterfaceExpression) Eval(system *gql.TypeSystem) {
 }
 
 type DefineUnionExpression struct {
-	descriptionExpression DescriptionExpression
-	nameExpression        NameExpression
-	directiveExpressions  []DirectiveExpression
-	unionExpression       []UnionInternalExpression
+	DescriptionExpression DescriptionExpression
+	NameExpression        NameExpression
+	DirectiveExpressions  []DirectiveExpression
+	UnionExpression       []UnionInternalExpression
 }
 
 func (d *DefineUnionExpression) Eval(system *gql.TypeSystem) {
 	u := &gql.Union{
-		Description: d.descriptionExpression.Eval(),
-		Name:        d.nameExpression.Eval(),
-		Directives:  evalDirectives(d.directiveExpressions),
+		Description: d.DescriptionExpression.Eval(),
+		Name:        d.NameExpression.Eval(),
+		Directives:  evalDirectives(d.DirectiveExpressions),
 	}
-	for _, e := range d.unionExpression {
+	for _, e := range d.UnionExpression {
 		e.Eval(u)
 	}
-	system.UnionTypes[d.nameExpression.Eval()] = u
+	system.UnionTypes[d.NameExpression.Eval()] = u
 }
 
 type ExtendUnionExpression struct {
@@ -195,22 +204,22 @@ func (e *ExtendUnionExpression) Eval(system *gql.TypeSystem) {
 }
 
 type DefineEnumExpression struct {
-	descriptionExpression DescriptionExpression
-	nameExpression        NameExpression
-	directiveExpressions  []DirectiveExpression
-	enumExpression        []EnumInternalExpression
+	DescriptionExpression DescriptionExpression
+	NameExpression        NameExpression
+	DirectiveExpressions  []DirectiveExpression
+	EnumExpression        []EnumInternalExpression
 }
 
 func (d *DefineEnumExpression) Eval(system *gql.TypeSystem) {
 	enum := &gql.Enum{
-		Description: d.descriptionExpression.Eval(),
-		Name:        d.nameExpression.Eval(),
-		Directives:  evalDirectives(d.directiveExpressions),
+		Description: d.DescriptionExpression.Eval(),
+		Name:        d.NameExpression.Eval(),
+		Directives:  evalDirectives(d.DirectiveExpressions),
 	}
-	for _, e := range d.enumExpression {
+	for _, e := range d.EnumExpression {
 		e.Eval(enum)
 	}
-	system.EnumTypes[d.nameExpression.Eval()] = enum
+	system.EnumTypes[d.NameExpression.Eval()] = enum
 }
 
 type ExtendEnumExpression struct {
@@ -232,20 +241,20 @@ func (e *ExtendEnumExpression) Eval(system *gql.TypeSystem) {
 }
 
 type DefineInputObjectExpression struct {
-	descriptionExpression             DescriptionExpression
-	nameExpression                    NameExpression
-	directiveExpressions              []DirectiveExpression
-	defineInputObjectFieldExpressions []InputValueExpression
+	DescriptionExpression             DescriptionExpression
+	NameExpression                    NameExpression
+	DirectiveExpressions              []DirectiveExpression
+	DefineInputObjectFieldExpressions []InputValueExpression
 }
 
 func (d *DefineInputObjectExpression) Eval(system *gql.TypeSystem) {
 	obj := &gql.InputObject{
-		Description: d.descriptionExpression.Eval(),
-		Name:        d.nameExpression.Eval(),
-		Directives:  evalDirectives(d.directiveExpressions),
-		InputValue:  evalInputValues(d.defineInputObjectFieldExpressions),
+		Description: d.DescriptionExpression.Eval(),
+		Name:        d.NameExpression.Eval(),
+		Directives:  evalDirectives(d.DirectiveExpressions),
+		InputValue:  evalInputValues(d.DefineInputObjectFieldExpressions),
 	}
-	system.InputObjectTypes[d.nameExpression.Eval()] = obj
+	system.InputObjectTypes[d.NameExpression.Eval()] = obj
 }
 
 type ExtendInputObjectExpression struct {
@@ -265,20 +274,20 @@ func (e *ExtendInputObjectExpression) Eval(system *gql.TypeSystem) {
 }
 
 type DirectiveDefinition struct {
-	descriptionExpression DescriptionExpression
-	nameExpression        NameExpression
-	argsExpression        []InputValueExpression
-	expressions           []DirectiveInternalExpression
+	DescriptionExpression DescriptionExpression
+	NameExpression        NameExpression
+	ArgsExpression        []InputValueExpression
+	Expressions           []DirectiveInternalExpression
 }
 
 func (d *DirectiveDefinition) Eval(system *gql.TypeSystem) {
 	directive := &gql.Directive{
-		Description: d.descriptionExpression.Eval(),
-		Name:        d.nameExpression.Eval(),
-		Arguments:   evalInputValues(d.argsExpression),
+		Description: d.DescriptionExpression.Eval(),
+		Name:        d.NameExpression.Eval(),
+		Arguments:   evalInputValues(d.ArgsExpression),
 	}
-	for _, e := range d.expressions {
+	for _, e := range d.Expressions {
 		e.Eval(directive)
 	}
-	system.Directives[d.nameExpression.Eval()] = directive
+	system.Directives[d.NameExpression.Eval()] = directive
 }

@@ -27,6 +27,9 @@ func (n *not) HeadMatches(rs []rune) bool {
 func (n *not) MatchCount(rs []rune) int {
 	c := 0
 	for {
+		if c > len(rs) {
+			return len(rs)
+		}
 		if n.matcher.HeadMatches(rs[c:]) {
 			return c
 		}
@@ -158,7 +161,7 @@ var (
 	comma = Str(",")
 
 	punctuator = StrUnion(
-		"!", "$", "(", ")", "...", ":", "=", "@", "[", "]", "{", "}", "|",
+		"&", "!", "$", "(", ")", "...", ":", "=", "@", "[", "]", "{", "}", "|",
 	)
 
 	commentHead = Str("#")

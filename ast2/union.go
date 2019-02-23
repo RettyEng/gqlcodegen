@@ -7,9 +7,9 @@ type UnionInternalExpression interface {
 }
 
 type DefineUnionMemberExpression struct {
-	typeExp TypeRefExpression
+	TypeExp TypeRefExpression
 }
 
 func (d *DefineUnionMemberExpression) Eval(union *gql.Union) {
-	union.Members = append(union.Members, d.typeExp.Eval())
+	union.Members = append(union.Members, d.TypeExp.Eval())
 }

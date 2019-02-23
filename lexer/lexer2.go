@@ -10,6 +10,7 @@ import (
 
 type Lexer struct {
 	scanner *Scanner
+	pool    []*token.Token
 }
 
 func NewLexer(r io.Reader) *Lexer {
@@ -22,7 +23,7 @@ func NewLexer(r io.Reader) *Lexer {
 		}
 		runes = append(runes, r)
 	}
-	return &Lexer{NewScanner(runes)}
+	return &Lexer{NewScanner(runes), nil}
 }
 
 func (l *Lexer) next() *token.Token {
@@ -91,7 +92,12 @@ func (l *Lexer) next() *token.Token {
 	return nil
 }
 
-func (l *Lexer) Next() *token.Token {
+func (l *Lexer) Pop() *token.Token {
+	if len(l.pool) != 0 {
+		t := l.pool[0]
+		l.pool = l.pool[1:]
+		return t
+	}
 	ignored := map[token.Type]struct{}{
 		token.TypeUnicodeBom:     {},
 		token.TypeWhiteSpace:     {},
@@ -109,6 +115,10 @@ func (l *Lexer) Next() *token.Token {
 			return t
 		}
 	}
+}
+
+func (l *Lexer) Push(t *token.Token) {
+	l.pool = append([]*token.Token{t}, l.pool...)
 }
 
 func (l *Lexer) takeNumber() *token.Token {
@@ -162,7 +172,7 @@ func (l *Lexer) takeBlockString() *token.Token {
 
 func (l *Lexer) takeString() *token.Token {
 	s := l.scanner
-	value, line, col := s.TakeWhileMatch(strStart)
+	value, line, col := s.Take(strStart)
 	for {
 		v, _, _ := s.TakeWhileMatch(strChar)
 		value += v

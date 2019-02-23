@@ -17,6 +17,19 @@ type TypeSystem struct {
 	Directives       map[string]*Directive
 }
 
+func NewTypeSystem() *TypeSystem {
+	return &TypeSystem{
+		Schema:           &Schema{},
+		ScalarTypes:      map[string]*Scalar{},
+		ObjectTypes:      map[string]*Object{},
+		InterfaceTypes:   map[string]*Interface{},
+		UnionTypes:       map[string]*Union{},
+		EnumTypes:        map[string]*Enum{},
+		InputObjectTypes: map[string]*InputObject{},
+		Directives:       map[string]*Directive{},
+	}
+}
+
 type Schema struct {
 	Directives   []*DirectiveRef
 	Query        *TypeRef
@@ -67,7 +80,9 @@ type Directive struct {
 }
 
 type EnumValue struct {
-	Name string
+	Description string
+	Name        string
+	Directives  []*DirectiveRef
 }
 
 type ObjectField struct {
@@ -90,46 +105,30 @@ type TypeRef struct {
 }
 
 type Value interface {
-	Type() *TypeRef
 	Value() string
-	Children() []Value
 }
 type ValueImpl struct {
-	typeRef *TypeRef
-	value   string
+	Val string
 }
 
-func (v *ValueImpl) Type() *TypeRef {
-	return v.typeRef
-}
 func (v *ValueImpl) Value() string {
 	return v.Value()
 }
-func (v *ValueImpl) Children() []Value {
-	return nil
-}
 
 type List struct {
-	typeRef *TypeRef
-	value   string
-	child   []Value
+	ValueString string
+	Child       []Value
 }
 
-func (l *List) Type() *TypeRef {
-	return l.typeRef
-}
 func (l *List) Value() string {
-	if l.value == "null" {
+	if l.ValueString == "null" {
 		return "null"
 	}
 	var child []string
-	for _, c := range l.child {
+	for _, c := range l.Child {
 		child = append(child, c.Value())
 	}
 	return "[" + strings.Join(child, ", ") + "]"
-}
-func (l *List) Children() []Value {
-	return l.child
 }
 
 type InputObject struct {

@@ -7,28 +7,28 @@ type ObjectInternalExpression interface {
 }
 
 type ImplementExpression struct {
-	typeExp TypeRefExpression
+	TypeExp TypeRefExpression
 }
 
 func (e *ImplementExpression) Eval(object *gql.Object) {
-	object.Implements = append(object.Implements, e.typeExp.Eval())
+	object.Implements = append(object.Implements, e.TypeExp.Eval())
 }
 
 type DefineFieldExpression struct {
-	name        NameExpression
-	typeRef     TypeRefExpression
-	description DescriptionExpression
-	directives  []DirectiveExpression
-	args        []InputValueExpression
+	Name        NameExpression
+	TypeRef     TypeRefExpression
+	Description DescriptionExpression
+	Directives  []DirectiveExpression
+	Args        []InputValueExpression
 }
 
 func (e *DefineFieldExpression) Eval(object *gql.Object) {
 	f := &gql.ObjectField{
-		Name:        e.name.Eval(),
-		Type:        e.typeRef.Eval(),
-		Description: e.description.Eval(),
-		Directives:  evalDirectives(e.directives),
-		Args:        evalInputValues(e.args),
+		Name:        e.Name.Eval(),
+		Type:        e.TypeRef.Eval(),
+		Description: e.Description.Eval(),
+		Directives:  evalDirectives(e.Directives),
+		Args:        evalInputValues(e.Args),
 	}
 	object.Fields = append(object.Fields, f)
 }

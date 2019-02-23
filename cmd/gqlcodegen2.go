@@ -1,23 +1,18 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
-	"github.com/RettyInc/gqlcodegen/lexer"
+	"github.com/davecgh/go-spew/spew"
+
+	"github.com/RettyInc/gqlcodegen/parser2"
 )
 
 func main() {
-	l := lexer.NewLexer(os.Stdin)
-
-	line := 1
-
-	for t := l.Next(); t != nil; t = l.Next() {
-		li, co := t.LineCol()
-		if line != li {
-			fmt.Println()
-			line = li
-		}
-		fmt.Printf("%s(%s)[%d:%d] ", t.Type().String(), t.Value(), li, co)
-	}
+	p := parser2.NewParser(os.Stdin)
+	ts := p.Parse()
+	spew.Config.Indent = "    "
+	spew.Config.DisablePointerAddresses = true
+	spew.Config.DisableMethods = true
+	spew.Dump(ts)
 }

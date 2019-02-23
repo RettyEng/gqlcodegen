@@ -6,20 +6,20 @@ type InterfaceInternalExpression interface {
 	Eval(*gql.Interface)
 }
 type DefineInterfaceFieldExpression struct {
-	nameExp        NameExpression
-	typeExp        TypeRefExpression
-	descriptionExp DescriptionExpression
-	argsExp        []InputValueExpression
-	directivesExp  []DirectiveExpression
+	NameExp        NameExpression
+	TypeExp        TypeRefExpression
+	DescriptionExp DescriptionExpression
+	ArgsExp        []InputValueExpression
+	DirectivesExp  []DirectiveExpression
 }
 
 func (d *DefineInterfaceFieldExpression) Eval(i *gql.Interface) {
 	f := &gql.ObjectField{
-		Name:        d.nameExp.Eval(),
-		Type:        d.typeExp.Eval(),
-		Description: d.descriptionExp.Eval(),
-		Args:        evalInputValues(d.argsExp),
-		Directives:  evalDirectives(d.directivesExp),
+		Name:        d.NameExp.Eval(),
+		Type:        d.TypeExp.Eval(),
+		Description: d.DescriptionExp.Eval(),
+		Args:        evalInputValues(d.ArgsExp),
+		Directives:  evalDirectives(d.DirectivesExp),
 	}
 	i.Fields = append(i.Fields, f)
 }

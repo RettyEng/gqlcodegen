@@ -6,7 +6,12 @@ schema {
 # Scalar definition
 # ------------------------
 
-scalar RegistrationNumber
+scalar RegistrationNumber @deprecated(reason: "Personal information")
+@aaa(bbb: [cde])
+
+"""
+It used as ID
+"""
 scalar Uint32
 scalar Cursor
 
@@ -32,12 +37,12 @@ type Truck {
     capacity: Int!
 }
 
-type Trailer {
+type Trailer implements & Foo {
     length: Int!
     capacity: Int!
 }
 
-type Driver {
+type Driver implements Hoge & Fuga{
     licenceNumber: String # Some drivers do not have licence
     name: String!
     middleName: String
@@ -46,11 +51,24 @@ type Driver {
     class: Class!
 }
 
+union Transporter = | Truck | Trailer
+
+"""
+This is a Vehicle
+"""
+interface Vehicle @hello() {
+    "Number"
+    number: RegistrationNumber! @deprecated(reason: "3J0H224")
+
+    name(lang: Lang = EN): String
+}
+
 # ------------------------
 # Enum definition
 # ------------------------
 
-enum Maker {
+enum Maker @important() {
+    "Scania is awesome"
     SCANIA
     DAF
     MAN
@@ -59,6 +77,7 @@ enum Maker {
     IVECO
     VOLVO
     # HINO
+    ISUZU @deprecated(reason: "not an euro truck")
 }
 
 enum Class {
@@ -67,3 +86,33 @@ enum Class {
     KING_OF_ROAD
 }
 
+"""
+My new input value
+"""
+input Hoge {
+        id: Uint64 = 0 @deprecated(reason: "no reason")
+        name: String = "hoge"
+        fuga: Fuga
+        float: Float = 0.1
+    }
+
+directive @special(id: Uint32 = 50, name: String = "") on
+QUERY
+| MUTATION
+| SUBSCRIPTION
+| FIELD
+| FRAGMENT_DEFINITION
+| FRAGMENT_SPREAD
+| INLINE_FRAGMENT
+| VARIABLE_DEFINITION
+| SCHEMA
+| SCALAR
+| OBJECT
+| FIELD_DEFINITION
+| ARGUMENT_DEFINITION
+| INTERFACE
+| UNION
+| ENUM
+| ENUM_VALUE
+| INPUT_OBJECT
+| INPUT_FIELD_DEFINITION

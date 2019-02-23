@@ -7,25 +7,25 @@ type SchemaInternalExpression interface {
 }
 
 type DefineQueryExpression struct {
-	typeExp TypeRefExpression
+	Type TypeRefExpression
 }
 
 func (d *DefineQueryExpression) Eval(schema *gql.Schema) {
-	schema.Query = d.typeExp.Eval()
+	schema.Query = d.Type.Eval()
 }
 
 type DefineMutationExpression struct {
-	typeExp TypeRefExpression
+	Type TypeRefExpression
 }
 
 func (d *DefineMutationExpression) Eval(schema *gql.Schema) {
-	schema.Mutation = d.typeExp.Eval()
+	schema.Mutation = d.Type.Eval()
 }
 
 type DefineSubscriptionExpression struct {
-	typeExp TypeRefExpression
+	Type TypeRefExpression
 }
 
 func (d *DefineSubscriptionExpression) Eval(schema *gql.Schema) {
-	schema.Subscription = d.typeExp.Eval()
+	schema.Subscription = d.Type.Eval()
 }

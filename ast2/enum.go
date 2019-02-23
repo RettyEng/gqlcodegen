@@ -7,9 +7,15 @@ type EnumInternalExpression interface {
 }
 
 type DefineEnumValueExpression struct {
-	name NameExpression
+	Description DescriptionExpression
+	Name        NameExpression
+	Directives  []DirectiveExpression
 }
 
 func (d *DefineEnumValueExpression) Eval(enum *gql.Enum) {
-	enum.Values = append(enum.Values, &gql.EnumValue{Name: d.name.Eval()})
+	enum.Values = append(enum.Values, &gql.EnumValue{
+		Name:        d.Name.Eval(),
+		Description: d.Description.Eval(),
+		Directives:  evalDirectives(d.Directives),
+	})
 }

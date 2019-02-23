@@ -6,20 +6,20 @@ type TypeRefExpression interface {
 	Eval() *gql.TypeRef
 }
 type TypeRefExpressionImpl struct {
-	innerType  TypeRefExpression
-	isNullable bool
-	name       NameExpression
+	InnerType  TypeRefExpression
+	IsNullable bool
+	Name       NameExpression
 }
 
 func (exp *TypeRefExpressionImpl) Eval() *gql.TypeRef {
 	var inner *gql.TypeRef = nil
-	if exp.innerType != nil {
-		inner = exp.innerType.Eval()
+	if exp.InnerType != nil {
+		inner = exp.InnerType.Eval()
 	}
 	return &gql.TypeRef{
 		InnerType:  inner,
-		Name:       exp.name.Eval(),
-		IsNullable: exp.isNullable,
+		Name:       exp.Name.Eval(),
+		IsNullable: exp.IsNullable,
 	}
 }
 
@@ -27,25 +27,28 @@ type ValueExpression interface {
 	Eval() gql.Value
 }
 type ValueExpressionImpl struct {
-	value   string
-	typeRef TypeRefExpression
+	Value string
 }
 
 func (exp *ValueExpressionImpl) Eval() gql.Value {
-	return &gql.ValueImpl{exp.typeRef.Eval(), exp.value}
+	return &gql.ValueImpl{
+		Val: exp.Value,
+	}
 }
 
 type ListValueExpressionImpl struct {
-	typeRef  TypeRefExpression
-	children []ValueExpression
+	Children []ValueExpression
 }
 
 func (exp *ListValueExpressionImpl) Eval() gql.Value {
 	var child []gql.Value
-	for _, e := range exp.children {
+	for _, e := range exp.Children {
 		child = append(child, e.Eval())
 	}
-	return &gql.List{}
+	return &gql.List{
+		"[]",
+		child,
+	}
 }
 
 type NameExpression interface {
@@ -63,28 +66,34 @@ type DescriptionExpression interface {
 	Eval() string
 }
 type DescriptionExpressionImpl struct {
-	description string
+	Description string
 }
 
 func (exp *DescriptionExpressionImpl) Eval() string {
-	return exp.description
+	return exp.Description
+}
+
+type EmptyDescription struct{}
+
+func (exp *EmptyDescription) Eval() string {
+	return ""
 }
 
 type DirectiveExpression interface {
 	Eval() *gql.DirectiveRef
 }
 type DirectiveExpressionImpl struct {
-	name string
-	args map[string]ValueExpression
+	Name string
+	Args map[string]ValueExpression
 }
 
 func (exp *DirectiveExpressionImpl) Eval() *gql.DirectiveRef {
 	args := map[string]gql.Value{}
-	for name, v := range exp.args {
+	for name, v := range exp.Args {
 		args[name] = v.Eval()
 	}
 	return &gql.DirectiveRef{
-		Name: exp.name,
+		Name: exp.Name,
 		Args: args,
 	}
 }
@@ -93,19 +102,23 @@ type InputValueExpression interface {
 	Eval() *gql.InputValue
 }
 type InputValueExpressionImpl struct {
-	descriptionExp DescriptionExpression
-	nameExp        NameExpression
-	typeExp        TypeRefExpression
-	defaultValue   ValueExpression
-	directives     []DirectiveExpression
+	Description  DescriptionExpression
+	Name         NameExpression
+	Type         TypeRefExpression
+	DefaultValue ValueExpression
+	Directives   []DirectiveExpression
 }
 
-func (exp *InputValueExpressionImpl) Eval(direc *gql.Directive) *gql.InputValue {
+func (exp *InputValueExpressionImpl) Eval() *gql.InputValue {
+	var value gql.Value = nil
+	if exp.DefaultValue != nil {
+		value = exp.DefaultValue.Eval()
+	}
 	return &gql.InputValue{
-		Description: exp.descriptionExp.Eval(),
-		Name:        exp.nameExp.Eval(),
-		Type:        exp.typeExp.Eval(),
-		Default:     exp.defaultValue.Eval(),
-		Directives:  evalDirectives(exp.directives),
+		Description: exp.Description.Eval(),
+		Name:        exp.Name.Eval(),
+		Type:        exp.Type.Eval(),
+		Default:     value,
+		Directives:  evalDirectives(exp.Directives),
 	}
 }
