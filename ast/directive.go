@@ -1,7 +1,7 @@
-package ast2
+package ast
 
 import (
-	"github.com/RettyInc/gqlcodegen/ast2/directive"
+	"github.com/RettyInc/gqlcodegen/ast/directive"
 
 	"github.com/RettyInc/gqlcodegen/gql"
 )

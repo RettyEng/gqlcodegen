@@ -3,7 +3,7 @@ package gql
 import (
 	"strings"
 
-	"github.com/RettyInc/gqlcodegen/ast2/directive"
+	"github.com/RettyInc/gqlcodegen/ast/directive"
 )
 
 type TypeSystem struct {
@@ -30,6 +30,11 @@ func NewTypeSystem() *TypeSystem {
 	}
 }
 
+type Commentable interface {
+	GetDescription() string
+	GetDirectives() []*DirectiveRef
+}
+
 type Schema struct {
 	Directives   []*DirectiveRef
 	Query        *TypeRef
@@ -43,12 +48,26 @@ type Scalar struct {
 	Directives  []*DirectiveRef
 }
 
+func (s *Scalar) GetDescription() string {
+	return s.Description
+}
+func (s *Scalar) GetDirectives() []*DirectiveRef {
+	return s.Directives
+}
+
 type Object struct {
 	Description string
 	Name        string
 	Implements  []*TypeRef
 	Directives  []*DirectiveRef
 	Fields      []*ObjectField
+}
+
+func (s *Object) GetDescription() string {
+	return s.Description
+}
+func (s *Object) GetDirectives() []*DirectiveRef {
+	return s.Directives
 }
 
 type Interface struct {
@@ -58,6 +77,13 @@ type Interface struct {
 	Fields      []*ObjectField
 }
 
+func (s *Interface) GetDescription() string {
+	return s.Description
+}
+func (s *Interface) GetDirectives() []*DirectiveRef {
+	return s.Directives
+}
+
 type Union struct {
 	Description string
 	Name        string
@@ -65,11 +91,25 @@ type Union struct {
 	Members     []*TypeRef
 }
 
+func (s *Union) GetDescription() string {
+	return s.Description
+}
+func (s *Union) GetDirectives() []*DirectiveRef {
+	return s.Directives
+}
+
 type Enum struct {
 	Description string
 	Name        string
 	Directives  []*DirectiveRef
 	Values      []*EnumValue
+}
+
+func (s *Enum) GetDescription() string {
+	return s.Description
+}
+func (s *Enum) GetDirectives() []*DirectiveRef {
+	return s.Directives
 }
 
 type Directive struct {
@@ -85,12 +125,26 @@ type EnumValue struct {
 	Directives  []*DirectiveRef
 }
 
+func (s *EnumValue) GetDescription() string {
+	return s.Description
+}
+func (s *EnumValue) GetDirectives() []*DirectiveRef {
+	return s.Directives
+}
+
 type ObjectField struct {
 	Name        string
 	Type        *TypeRef
 	Description string
 	Directives  []*DirectiveRef
 	Args        []*InputValue
+}
+
+func (s *ObjectField) GetDescription() string {
+	return s.Description
+}
+func (s *ObjectField) GetDirectives() []*DirectiveRef {
+	return s.Directives
 }
 
 type DirectiveRef struct {
@@ -112,7 +166,7 @@ type ValueImpl struct {
 }
 
 func (v *ValueImpl) Value() string {
-	return v.Value()
+	return v.Val
 }
 
 type List struct {
@@ -138,10 +192,24 @@ type InputObject struct {
 	InputValue  []*InputValue
 }
 
+func (s *InputObject) GetDescription() string {
+	return s.Description
+}
+func (s *InputObject) GetDirectives() []*DirectiveRef {
+	return s.Directives
+}
+
 type InputValue struct {
 	Description string
 	Name        string
 	Directives  []*DirectiveRef
 	Type        *TypeRef
 	Default     Value
+}
+
+func (s *InputValue) GetDescription() string {
+	return s.Description
+}
+func (s *InputValue) GetDirectives() []*DirectiveRef {
+	return s.Directives
 }

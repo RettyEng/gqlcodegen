@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/RettyInc/gqlcodegen/ast"
+	"github.com/RettyInc/gqlcodegen/gql"
 	"github.com/RettyInc/gqlcodegen/internal/generator"
 	"github.com/RettyInc/gqlcodegen/parser"
 )
@@ -23,12 +23,10 @@ var (
 )
 
 func createGenerator(
-	packageName, packagePath string, root *ast.Root,
+	packageName, packagePath string, root *gql.TypeSystem,
 ) *generator.Generator {
 	conf := &generator.Config{
-		EnumTypes:         enumerateEnums(root),
-		ScalarTypes:       enumerateScalars(root),
-		ResolverTypes:     enumerateResolverTypes(root),
+		TypeSystem:        root,
 		EnumPackagePrefix: *enumPackagePrefix,
 		ScalarPackage:     *scalarPackage,
 		Package: &generator.Package{
@@ -37,30 +35,6 @@ func createGenerator(
 		},
 	}
 	return generator.NewGenerator(conf)
-}
-
-func enumerateScalars(root *ast.Root) map[string]struct{} {
-	scalar := map[string]struct{}{}
-	for _, s := range root.Scalars() {
-		scalar[s.Name()] = struct{}{}
-	}
-	return scalar
-}
-
-func enumerateEnums(root *ast.Root) map[string]struct{} {
-	enum := map[string]struct{}{}
-	for _, e := range root.Enums() {
-		enum[e.Name()] = struct{}{}
-	}
-	return enum
-}
-
-func enumerateResolverTypes(root *ast.Root) map[string]struct{} {
-	resolver := map[string]struct{}{}
-	for _, r := range root.Types() {
-		resolver[r.Name()] = struct{}{}
-	}
-	return resolver
 }
 
 func main() {
@@ -73,22 +47,22 @@ func main() {
 		packagePath = path.Dir(args[0])
 		packageName = path.Base(packagePath)
 	}
-	rootAst := loadAst(*schema)
-	generator := createGenerator(packageName, packagePath, rootAst)
+	typeSystem := loadTypeSystem(*schema)
+	generator := createGenerator(packageName, packagePath, typeSystem)
 
-	generate(generator, rootAst)
+	generate(generator)
 }
 
-func generate(g *generator.Generator, root *ast.Root) {
+func generate(g *generator.Generator) {
 	targets := strings.Split(*generateTarget, ",")
 	for _, t := range targets {
 		switch t {
 		case "enum":
-			for _, e := range root.Enums() {
+			for _, e := range g.Config().TypeSystem.EnumTypes {
 				writeEnum(g, e)
 			}
 		case "resolver":
-			for _, t := range root.Types() {
+			for _, t := range g.Config().TypeSystem.ObjectTypes {
 				writeType(g, t)
 			}
 		default:
@@ -97,31 +71,31 @@ func generate(g *generator.Generator, root *ast.Root) {
 	}
 }
 
-func writeEnum(g *generator.Generator, def *ast.EnumDef) {
-	g.GenerateSource(def)
+func writeEnum(g *generator.Generator, enum *gql.Enum) {
+	g.GenerateSource(enum)
 	defer g.ClearBuff()
 	g.Format()
-	dirName := path.Join(g.Config().Package.Path, strings.ToLower(def.Name()))
+	dirName := path.Join(g.Config().Package.Path, strings.ToLower(enum.Name))
 	_ = os.Mkdir(dirName, 0755)
 	g.WriteToFile(
-		path.Join(dirName, strings.ToLower(def.Name())+*fileSuffix+".go"),
+		path.Join(dirName, strings.ToLower(enum.Name)+*fileSuffix+".go"),
 	)
 }
 
-func writeType(g *generator.Generator, def *ast.TypeDef) {
-	g.GenerateSource(def)
+func writeType(g *generator.Generator, obj *gql.Object) {
+	g.GenerateSource(obj)
 	defer g.ClearBuff()
 	g.Format()
 	g.WriteToFile(
-		path.Join(g.Config().Package.Path, strings.ToLower(def.Name())+*fileSuffix+".go"),
+		path.Join(g.Config().Package.Path, strings.ToLower(obj.Name)+*fileSuffix+".go"),
 	)
 }
 
-func loadAst(schemaPath string) *ast.Root {
+func loadTypeSystem(schemaPath string) *gql.TypeSystem {
 	f, e := os.Open(schemaPath)
 	if e != nil {
 		log.Fatalf("error occured while loading schema: %v", e)
 	}
 	defer f.Close()
-	return parser.NewParser(bufio.NewReader(f)).Parse()
+	return parser.NewParser(bufio.NewReader(f)).ParseAndEvalSchema()
 }

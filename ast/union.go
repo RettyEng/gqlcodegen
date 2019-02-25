@@ -1,4 +1,4 @@
-package ast2
+package ast
 
 import "github.com/RettyInc/gqlcodegen/gql"
 

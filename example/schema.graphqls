@@ -22,19 +22,32 @@ extend scalar Cursor @deprecated(reason: "")
 
 type Query {
     truck(number: RegistrationNumber = null): Truck
-    garage(id: Uint32!): Garage
+
+    "Returns garage"
+    garage(id: Uint32!): Garage @hello()
 }
 
 type Garage {
     id: Uint32!
     trucks(size: Uint32! = 20, cursor: Cursor = null): [Truck!]!
-    drivers(size: Uint32! = 20, class: [Class!]! = [ELITE, KING_OF_ROAD], cursor: Cursor = null): [Driver!]!
+    drivers(
+      size: Uint32! = 20,
+
+      "driver class"
+      class: [Class!]! = [ELITE, KING_OF_ROAD],
+
+      cursor: Cursor = null @deprecated
+    ): [Driver!]!
     trailers(size: Uint32! = 20, cursor: Cursor = null): [Trailer!]!
 }
 
+"""
+This is truck
+"""
 type Truck {
     maker: Maker!
-    number: RegistrationNumber!
+    "Number"
+    number: RegistrationNumber! @hoge
     capacity: Int!
 }
 
@@ -64,6 +77,12 @@ interface Vehicle @hello() {
     name(lang: Lang = EN): String
 }
 
+extend interface Vehicle @notimplemented
+
+extend interface Vehicle {
+    enginePower: Int
+}
+
 # ------------------------
 # Enum definition
 # ------------------------
@@ -86,6 +105,10 @@ enum Class {
     ELITE
 
     KING_OF_ROAD @special
+}
+
+extend enum Class {
+    LEGEND
 }
 
 """

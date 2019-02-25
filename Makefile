@@ -17,7 +17,7 @@ delete-generated:
 	find example/enum -mindepth 1 -type d | xargs --no-run-if-empty rm -rf
 	find example -name '*_gql.go' | xargs --no-run-if-empty rm
 
-update-sample: delete-generated
+update-example: delete-generated
 	go generate example/resolver.go
 	go generate example/enum/enum.go
 

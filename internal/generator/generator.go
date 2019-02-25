@@ -2,13 +2,12 @@ package generator
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"go/format"
 	"log"
 	"os"
 
-	"github.com/RettyInc/gqlcodegen/ast"
+	"github.com/RettyInc/gqlcodegen/gql"
 )
 
 type Package struct {
@@ -17,9 +16,7 @@ type Package struct {
 }
 
 type Config struct {
-	EnumTypes         map[string]struct{}
-	ScalarTypes       map[string]struct{}
-	ResolverTypes     map[string]struct{}
+	TypeSystem        *gql.TypeSystem
 	EnumPackagePrefix string
 	ScalarPackage     string
 	Package           *Package
@@ -41,16 +38,14 @@ func (g *Generator) Config() *Config {
 	return g.config
 }
 
-func (g *Generator) GenerateSource(syntax ast.Ast) {
+func (g *Generator) GenerateSource(syntax interface{}) {
 	switch def := syntax.(type) {
-	case *ast.EnumDef:
+	case *gql.Enum:
 		generateEnum(g, def)
-	case *ast.TypeDef:
+	case *gql.Object:
 		generateType(g, def)
 	default:
-		log.Fatal(
-			errors.New(fmt.Sprintf("unsupported type %s", syntax.AstType().String())),
-		)
+		log.Fatalf("unsupported value %v", def)
 	}
 }
 

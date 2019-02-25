@@ -2,185 +2,198 @@ package lexer
 
 import (
 	"bufio"
-	"errors"
-	"fmt"
-	"regexp"
+	"io"
+	"log"
+
+	"github.com/RettyInc/gqlcodegen/lexer/token"
 )
 
-type Lexer_ struct {
-	buff *bufio.Reader
+type Lexer struct {
+	scanner *Scanner
+	pool    []*token.Token
 }
 
-func NewLexer_(r *bufio.Reader) *Lexer_ {
-	return &Lexer_{buff: r}
-}
-
-func (t *Lexer_) takeRunes() []rune {
-	runes := make([]rune, 0)
+func NewLexer(r io.Reader) *Lexer {
+	buff := bufio.NewReader(r)
+	var runes []rune
 	for {
-		var r rune
-		var e error
-
-		if r, _, e = t.buff.ReadRune(); e != nil {
+		r, _, e := buff.ReadRune()
+		if e != nil {
 			break
 		}
 		runes = append(runes, r)
 	}
-	return runes
+	return &Lexer{NewScanner(runes), nil}
 }
 
-func (t *Lexer_) Tokenize() []*Token {
-	var tokens []*Token
-	runes := t.takeRunes()
-	cur := 0
-	line := 1
-	column := 1
+func (l *Lexer) next() *token.Token {
+	s := l.scanner
+	takeWhileAndAppend := func(t token.Type, m ...Matcher) *token.Token {
+		v, c, l := s.TakeWhileMatch(m[0])
+		for _, m := range m[1:] {
+			tail, _, _ := s.TakeWhileMatch(m)
+			v += tail
+		}
+		return token.NewToken(t, v, c, l)
+	}
+	takeAndAppend := func(t token.Type, m ...Matcher) *token.Token {
+		v, c, l := s.Take(m[0])
+		return token.NewToken(t, v, c, l)
+	}
 
-	for cur < len(runes) {
-		token, consumed := takeTokenValue(runes[cur:])
-		tokens = append(
-			tokens, convertValueToToken(string(token), line, column),
+	if !l.scanner.HasNext() {
+		return nil
+	}
+
+	if s.StartsWith(unicodeBom) {
+		return takeAndAppend(token.TypeUnicodeBom, unicodeBom)
+	}
+
+	if s.StartsWith(whiteSpace) {
+		return takeAndAppend(token.TypeWhiteSpace, whiteSpace)
+	}
+
+	if s.StartsWith(lineTerminator) {
+		return takeAndAppend(token.TypeLineTerminator, lineTerminator)
+	}
+
+	if s.StartsWith(comma) {
+		return takeAndAppend(token.TypeComma, comma)
+	}
+
+	if s.StartsWith(punctuator) {
+		return takeAndAppend(token.TypePunctuator, punctuator)
+	}
+
+	if s.StartsWith(commentHead) {
+		return takeWhileAndAppend(token.TypeComment, commentHead, commentTail)
+	}
+
+	if s.StartsWith(nameHead) {
+		return takeWhileAndAppend(token.TypeName, nameHead, nameTail)
+	}
+
+	if s.StartsWith(negative) || s.StartsWith(intVal) {
+		return l.takeNumber()
+	}
+
+	if s.StartsWith(blockStrStart) {
+		return l.takeBlockString()
+	}
+
+	if s.StartsWith(strStart) {
+		return l.takeString()
+	}
+
+	log.Fatalf(
+		"unexpected token %c at line %d, col %d",
+		s.runes[0], s.line, s.col,
+	)
+	return nil
+}
+
+func (l *Lexer) Pop() *token.Token {
+	if len(l.pool) != 0 {
+		t := l.pool[0]
+		l.pool = l.pool[1:]
+		return t
+	}
+	ignored := map[token.Type]struct{}{
+		token.TypeUnicodeBom:     {},
+		token.TypeWhiteSpace:     {},
+		token.TypeLineTerminator: {},
+		token.TypeComment:        {},
+		token.TypeComma:          {},
+	}
+
+	for {
+		t := l.next()
+		if t == nil {
+			return nil
+		}
+		if _, isIgnored := ignored[t.Type()]; !isIgnored {
+			return t
+		}
+	}
+}
+
+func (l *Lexer) Push(t *token.Token) {
+	l.pool = append([]*token.Token{t}, l.pool...)
+}
+
+func (l *Lexer) takeNumber() *token.Token {
+	s := l.scanner
+	negativeSign, line, col := s.TakeWhileMatch(negative)
+	fatal := func() {
+		log.Fatalf("illegal int token at line %d, col %d", line, col)
+	}
+	intPart, _, _ := s.TakeWhileMatch(intVal)
+	if len([]rune(intPart)) == 0 {
+		fatal()
+	}
+	if rs := []rune(intPart); rs[0] == '0' && len(rs) > 1 {
+		fatal()
+	}
+	fracHead, _, _ := s.TakeWhileMatch(fractionalPartHead)
+	fracPart := ""
+	if len([]rune(fracHead)) != 0 {
+		fracPart, _, _ = s.TakeWhileMatch(intVal)
+	}
+	exponentHead, _, _ := s.TakeWhileMatch(exponent)
+	exponentPart := ""
+	if len([]rune(exponentHead)) != 0 {
+		exponentPart, _, _ = s.TakeWhileMatch(sign)
+		n, _, _ := s.TakeWhileMatch(intVal)
+		exponentPart += n
+	}
+
+	if len([]rune(fracHead)) != 0 || len([]rune(exponentHead)) != 0 {
+		return token.NewToken(
+			token.TypeFloatVal,
+			negativeSign+intPart+fracHead+fracPart+exponentHead+exponentPart,
+			line, col,
 		)
-		column += consumed
-		if r := runes[cur]; r == '\n' {
-			line++
-			column = 1
-		}
-		cur += consumed
 	}
-	return tokens
+	return token.NewToken(token.TypeIntVal, negativeSign+intPart, line, col)
 }
 
-func convertValueToToken(value string, line, column int) *Token {
-	switch value {
-	case "schema":
-		return schemaT(line, column)
-	case "scalar":
-		return scalarT(line, column)
-	case "type":
-		return typeT(line, column)
-	case "enum":
-		return enumT(line, column)
-	case "true", "false":
-		return boolT(line, column, value)
-	case "null":
-		return nullT(line, column)
-	case "(":
-		return lParenT(line, column)
-	case ")":
-		return rParenT(line, column)
-	case "{":
-		return lBraceT(line, column)
-	case "}":
-		return rBraceT(line, column)
-	case "[":
-		return lBracketT(line, column)
-	case "]":
-		return rBracketT(line, column)
-	case "\n":
-		return newLineT(line, column)
-	case ":":
-		return colonT(line, column)
-	case ",":
-		return commaT(line, column)
-	case "!":
-		return notNullT(line, column)
-	case "=":
-		return eqT(line, column)
+func (l *Lexer) takeBlockString() *token.Token {
+	s := l.scanner
+	value, line, col := s.Take(blockStrStart)
+	v, _, _ := s.Take(blockStrChar)
+	value += v
+	if !s.StartsWith(blockStrEnd) {
+		log.Fatalf("illegal string at line %d, col %d", line, col)
 	}
-	r := regexp.MustCompile(`^\d+(\.\d+)?$`)
-	if r.MatchString(value) {
-		return numberT(line, column, value)
-	}
-	r = regexp.MustCompile(`^".*"$`)
-	if r.MatchString(value) {
-		return stringT(line, column, value)
-	}
-	r = regexp.MustCompile(`^[a-zA-Z0-9_\-]+$`)
-	if r.MatchString(value) {
-		return idT(line, column, value)
-	}
-	r = regexp.MustCompile(`^#.+$`)
-	if r.MatchString(value) {
-		return commentT(line, column, value)
-	}
-	panic(errors.New(fmt.Sprintf(`failed to parse "%s"`, value)))
+	v, _, _ = s.Take(blockStrEnd)
+	value += v
+	return token.NewToken(token.TypeStrVal, value, line, col)
 }
 
-func takeTokenValue(rs []rune) (string, int) {
-	consumed := 0
-	for cur := 0; rs[cur] == ' ' || rs[cur] == '\t'; cur++ {
-		consumed++
-	}
-	var token []rune
-	switch r := rs[consumed]; r {
-	case '(', ')', '{', '}', '[', ']', '\n', ':', '!', '=', ',':
-		return string([]rune{r}), consumed + 1
-	case '"':
-		token = takeString(rs[consumed:])
-	case '#':
-		token = takeComment(rs[consumed:])
-	default:
-		token = takeWhileSeparator(rs[consumed:])
-	}
-	return string(token), consumed + len(token)
-}
-
-func takeString(rs []rune) []rune {
-	str := make([]rune, 0)
-	cur := 0
-	isEscaping := true
-	r := rs[cur]
+func (l *Lexer) takeString() *token.Token {
+	s := l.scanner
+	value, line, col := s.Take(strStart)
 	for {
-		str = append(str, r)
-		if r == '"' && !isEscaping {
+		v, _, _ := s.TakeWhileMatch(strChar)
+		value += v
+		if s.StartsWith(strUnicodeEscapeHead) {
+			u, ul, uc := s.Take(strUnicodeEscapeHead)
+			value += u
+			for i := 0; i < 4; i++ {
+				if !s.StartsWith(hex) {
+					log.Fatalf("illegal unicode escape at line %d, col %d", ul, uc)
+				}
+				h, _, _ := s.Take(hex)
+				value += h
+			}
+			continue
+		}
+		if s.StartsWith(strEnd) {
+			v, _, _ = s.Take(strEnd)
+			value += v
 			break
 		}
-		if !isEscaping && r == '\\' {
-			isEscaping = true
-		} else {
-			isEscaping = false
-		}
-		cur++
-		r = rs[cur]
+		log.Fatalf("illegal string at line %d, col %d", line, col)
 	}
-	return str
-}
-
-func takeComment(rs []rune) []rune {
-	comment := make([]rune, 0)
-	for cur := 0; rs[cur] != '\n'; cur++ {
-		comment = append(comment, rs[cur])
-	}
-	return comment
-}
-
-func takeWhileSeparator(rs []rune) []rune {
-	token := make([]rune, 0)
-	separators := map[rune]struct{}{
-		' ':  {},
-		'\t': {},
-		'(':  {},
-		')':  {},
-		'{':  {},
-		'}':  {},
-		'[':  {},
-		']':  {},
-		'\n': {},
-		':':  {},
-		',':  {},
-		'!':  {},
-		'=':  {},
-	}
-
-	cur := 0
-	for {
-		r := rs[cur]
-		if _, contains := separators[r]; contains {
-			break
-		}
-		token = append(token, r)
-		cur++
-	}
-	return token
+	return token.NewToken(token.TypeStrVal, value, line, col)
 }

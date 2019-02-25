@@ -5,12 +5,12 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 
-	"github.com/RettyInc/gqlcodegen/parser2"
+	"github.com/RettyInc/gqlcodegen/parser"
 )
 
 func main() {
-	p := parser2.NewParser(os.Stdin)
-	ts := p.Parse()
+	p := parser.NewParser(os.Stdin)
+	ts := p.ParseSchema()
 	spew.Config.Indent = "    "
 	spew.Config.DisablePointerAddresses = true
 	spew.Config.DisableMethods = true
