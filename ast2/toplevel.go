@@ -51,14 +51,14 @@ func (d *DefineSchemaExpression) Eval(system *gql.TypeSystem) {
 }
 
 type ExtendSchemaExpression struct {
-	directiveExpressions []DirectiveExpression
-	expressions          []SchemaInternalExpression
+	DirectiveExpressions []DirectiveExpression
+	Expressions          []SchemaInternalExpression
 }
 
 func (e *ExtendSchemaExpression) Eval(system *gql.TypeSystem) {
-	directives := evalDirectives(e.directiveExpressions)
+	directives := evalDirectives(e.DirectiveExpressions)
 	system.Schema.Directives = append(system.Schema.Directives, directives...)
-	for _, e := range e.expressions {
+	for _, e := range e.Expressions {
 		e.Eval(system.Schema)
 	}
 }
@@ -78,17 +78,17 @@ func (d *DefineScalarExpression) Eval(system *gql.TypeSystem) {
 }
 
 type ExtendScalarExpression struct {
-	nameExpression       NameExpression
-	directiveExpressions []DirectiveExpression
+	NameExpression       NameExpression
+	DirectiveExpressions []DirectiveExpression
 }
 
 func (e *ExtendScalarExpression) Eval(system *gql.TypeSystem) {
-	s, ok := system.ScalarTypes[e.nameExpression.Eval()]
+	s, ok := system.ScalarTypes[e.NameExpression.Eval()]
 	if !ok {
 		log.Fatalf("extend target not found")
 	}
 	s.Directives =
-		append(s.Directives, evalDirectives(e.directiveExpressions)...)
+		append(s.Directives, evalDirectives(e.DirectiveExpressions)...)
 }
 
 type DefineObjectExpression struct {
@@ -111,22 +111,22 @@ func (d *DefineObjectExpression) Eval(system *gql.TypeSystem) {
 }
 
 type ExtendObjectExpression struct {
-	nameExpression       NameExpression
-	directiveExpressions []DirectiveExpression
-	objectExpression     []ObjectInternalExpression
+	NameExpression       NameExpression
+	DirectiveExpressions []DirectiveExpression
+	ObjectExpression     []ObjectInternalExpression
 }
 
 func (e *ExtendObjectExpression) Eval(system *gql.TypeSystem) {
-	obj, ok := system.ObjectTypes[e.nameExpression.Eval()]
+	obj, ok := system.ObjectTypes[e.NameExpression.Eval()]
 	if !ok {
 		log.Fatalf("extend target not found")
 	}
 	obj.Directives =
-		append(obj.Directives, evalDirectives(e.directiveExpressions)...)
-	for _, exp := range e.objectExpression {
+		append(obj.Directives, evalDirectives(e.DirectiveExpressions)...)
+	for _, exp := range e.ObjectExpression {
 		exp.Eval(obj)
 	}
-	system.ObjectTypes[e.nameExpression.Eval()] = obj
+	system.ObjectTypes[e.NameExpression.Eval()] = obj
 }
 
 type DefineInterfaceExpression struct {
@@ -149,21 +149,21 @@ func (d *DefineInterfaceExpression) Eval(system *gql.TypeSystem) {
 }
 
 type ExtendInterfaceExpression struct {
-	nameExpression       NameExpression
-	directiveExpressions []DirectiveExpression
-	interfaceExpression  []InterfaceInternalExpression
+	NameExpression       NameExpression
+	DirectiveExpressions []DirectiveExpression
+	InterfaceExpression  []InterfaceInternalExpression
 }
 
 func (e *ExtendInterfaceExpression) Eval(system *gql.TypeSystem) {
-	i, ok := system.InterfaceTypes[e.nameExpression.Eval()]
+	i, ok := system.InterfaceTypes[e.NameExpression.Eval()]
 	if !ok {
 		log.Fatalf("extend target not found")
 	}
-	i.Directives = append(i.Directives, evalDirectives(e.directiveExpressions)...)
-	for _, exp := range e.interfaceExpression {
+	i.Directives = append(i.Directives, evalDirectives(e.DirectiveExpressions)...)
+	for _, exp := range e.InterfaceExpression {
 		exp.Eval(i)
 	}
-	system.InterfaceTypes[e.nameExpression.Eval()] = i
+	system.InterfaceTypes[e.NameExpression.Eval()] = i
 }
 
 type DefineUnionExpression struct {
@@ -186,21 +186,21 @@ func (d *DefineUnionExpression) Eval(system *gql.TypeSystem) {
 }
 
 type ExtendUnionExpression struct {
-	nameExpression       NameExpression
-	directiveExpressions []DirectiveExpression
-	unionExpression      []UnionInternalExpression
+	NameExpression       NameExpression
+	DirectiveExpressions []DirectiveExpression
+	UnionExpression      []UnionInternalExpression
 }
 
 func (e *ExtendUnionExpression) Eval(system *gql.TypeSystem) {
-	u, ok := system.UnionTypes[e.nameExpression.Eval()]
+	u, ok := system.UnionTypes[e.NameExpression.Eval()]
 	if !ok {
 		log.Fatalf("extend target not found")
 	}
-	u.Directives = append(u.Directives, evalDirectives(e.directiveExpressions)...)
-	for _, e := range e.unionExpression {
+	u.Directives = append(u.Directives, evalDirectives(e.DirectiveExpressions)...)
+	for _, e := range e.UnionExpression {
 		e.Eval(u)
 	}
-	system.UnionTypes[e.nameExpression.Eval()] = u
+	system.UnionTypes[e.NameExpression.Eval()] = u
 }
 
 type DefineEnumExpression struct {
@@ -223,21 +223,21 @@ func (d *DefineEnumExpression) Eval(system *gql.TypeSystem) {
 }
 
 type ExtendEnumExpression struct {
-	nameExpression       NameExpression
-	directiveExpressions []DirectiveExpression
-	enumExpression       []EnumInternalExpression
+	NameExpression       NameExpression
+	DirectiveExpressions []DirectiveExpression
+	EnumExpression       []EnumInternalExpression
 }
 
 func (e *ExtendEnumExpression) Eval(system *gql.TypeSystem) {
-	enum, ok := system.EnumTypes[e.nameExpression.Eval()]
+	enum, ok := system.EnumTypes[e.NameExpression.Eval()]
 	if !ok {
 		log.Fatalf("extend target not found")
 	}
-	enum.Directives = append(enum.Directives, evalDirectives(e.directiveExpressions)...)
-	for _, e := range e.enumExpression {
+	enum.Directives = append(enum.Directives, evalDirectives(e.DirectiveExpressions)...)
+	for _, e := range e.EnumExpression {
 		e.Eval(enum)
 	}
-	system.EnumTypes[e.nameExpression.Eval()] = enum
+	system.EnumTypes[e.NameExpression.Eval()] = enum
 }
 
 type DefineInputObjectExpression struct {
@@ -258,19 +258,19 @@ func (d *DefineInputObjectExpression) Eval(system *gql.TypeSystem) {
 }
 
 type ExtendInputObjectExpression struct {
-	nameExpression                    NameExpression
-	directiveExpressions              []DirectiveExpression
-	defineInputObjectFieldExpressions []InputValueExpression
+	NameExpression                    NameExpression
+	DirectiveExpressions              []DirectiveExpression
+	DefineInputObjectFieldExpressions []InputValueExpression
 }
 
 func (e *ExtendInputObjectExpression) Eval(system *gql.TypeSystem) {
-	obj, ok := system.InputObjectTypes[e.nameExpression.Eval()]
+	obj, ok := system.InputObjectTypes[e.NameExpression.Eval()]
 	if !ok {
 		log.Fatalf("extend target not found")
 	}
-	obj.Directives = append(obj.Directives, evalDirectives(e.directiveExpressions)...)
-	obj.InputValue = append(obj.InputValue, evalInputValues(e.defineInputObjectFieldExpressions)...)
-	system.InputObjectTypes[e.nameExpression.Eval()] = obj
+	obj.Directives = append(obj.Directives, evalDirectives(e.DirectiveExpressions)...)
+	obj.InputValue = append(obj.InputValue, evalInputValues(e.DefineInputObjectFieldExpressions)...)
+	system.InputObjectTypes[e.NameExpression.Eval()] = obj
 }
 
 type DirectiveDefinition struct {

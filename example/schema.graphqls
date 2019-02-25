@@ -15,6 +15,7 @@ It used as ID
 scalar Uint32
 scalar Cursor
 
+extend scalar Cursor @deprecated(reason: "")
 # ------------------------
 # Type definition
 # ------------------------
@@ -83,7 +84,8 @@ enum Maker @important() {
 enum Class {
     ROOKIE
     ELITE
-    KING_OF_ROAD
+
+    KING_OF_ROAD @special
 }
 
 """
@@ -96,23 +98,23 @@ input Hoge {
         float: Float = 0.1
     }
 
-directive @special(id: Uint32 = 50, name: String = "") on
-QUERY
-| MUTATION
-| SUBSCRIPTION
-| FIELD
-| FRAGMENT_DEFINITION
-| FRAGMENT_SPREAD
-| INLINE_FRAGMENT
-| VARIABLE_DEFINITION
-| SCHEMA
-| SCALAR
-| OBJECT
-| FIELD_DEFINITION
-| ARGUMENT_DEFINITION
-| INTERFACE
-| UNION
-| ENUM
-| ENUM_VALUE
-| INPUT_OBJECT
-| INPUT_FIELD_DEFINITION
+directive @special(id: Uint32 = 50, name: String = "")
+        on QUERY
+         | MUTATION
+         | SUBSCRIPTION
+         | FIELD
+         | FRAGMENT_DEFINITION
+         | FRAGMENT_SPREAD
+         | INLINE_FRAGMENT
+         | VARIABLE_DEFINITION
+         | SCHEMA
+         | SCALAR
+         | OBJECT
+         | FIELD_DEFINITION
+         | ARGUMENT_DEFINITION
+         | INTERFACE
+         | UNION
+         | ENUM
+         | ENUM_VALUE
+         | INPUT_OBJECT
+         | INPUT_FIELD_DEFINITION

@@ -1,7 +1,6 @@
-package parser2
+ppackage parser2
 
 import (
-	"errors"
 	"io"
 	"log"
 	"strings"
@@ -24,7 +23,7 @@ func NewParser(reader io.Reader) *Parser {
 	}
 }
 
-func (p *Parser) Parse() *gql.TypeSystem {
+func (p *Parser) ParseAndEval() *gql.TypeSystem {
 	var exp []ast2.DefinitionExpression
 	for {
 		if !p.hasNext() {
@@ -56,10 +55,125 @@ func (p *Parser) Parse() *gql.TypeSystem {
 			exp = append(exp, p.parseDirective())
 		case "input":
 			exp = append(exp, p.parseInput())
+		case "extend":
+			exp = append(exp, p.parseExtend())
+		default:
+			unexpectedToken(t)
 		}
 
 	}
 	return (&ast2.TopLevel{exp}).Eval()
+}
+
+func (p *Parser) parseExtend() ast2.DefinitionExpression {
+	validateTokenValue(p.prefetch(0), "extend")
+	switch p.prefetch(1).Value() {
+	case "schema":
+		return p.parseExtendSchema()
+	case "scalar":
+		return p.parseExtendScalar()
+	case "enum":
+		return p.parseExtendEnum()
+	case "type":
+		return p.parseExtendObject()
+	case "interface":
+		return p.parseExtendInterface()
+	case "union":
+		return p.parseExtendUnion()
+	case "input":
+		return p.parseExtendInput()
+	default:
+		unexpectedToken(p.prefetch(1))
+	}
+	return nil
+}
+
+func (p *Parser) parseExtendInput() ast2.DefinitionExpression {
+	validateTokenValue(p.pop(), "extend")
+	validateTokenValue(p.pop(), "input")
+	n := p.parseName()
+	direc := p.parseDirectivesOrEmpty()
+	var body []ast2.InputValueExpression
+	if p.preValueCheck(0, "{") {
+		_ = p.pop()
+		for !p.preValueCheck(0, "}") {
+			body = append(body, p.parseInputValue())
+		}
+	}
+	return &ast2.ExtendInputObjectExpression{
+		n, direc, body,
+	}
+}
+
+func (p *Parser) parseExtendUnion() ast2.DefinitionExpression {
+	validateTokenValue(p.pop(), "extend")
+	validateTokenValue(p.pop(), "union")
+	n := p.parseName()
+	direc := p.parseDirectivesOrEmpty()
+	var body []ast2.UnionInternalExpression
+	if p.preValueCheck(0, "=") {
+		body = p.parseUnionBody()
+	}
+	return &ast2.ExtendUnionExpression{n, direc, body}
+}
+
+func (p *Parser) parseExtendInterface() ast2.DefinitionExpression {
+	validateTokenValue(p.pop(), "extend")
+	validateTokenValue(p.pop(), "interface")
+	n := p.parseName()
+	direc := p.parseDirectivesOrEmpty()
+	var body []ast2.InterfaceInternalExpression
+	if p.preValueCheck(0, "{") {
+		body = p.parseInterfaceBody()
+	}
+	return &ast2.ExtendInterfaceExpression{
+		n, direc, body,
+	}
+}
+
+func (p *Parser) parseExtendSchema() ast2.DefinitionExpression {
+	validateTokenValue(p.pop(), "extend")
+	validateTokenValue(p.pop(), "schema")
+	direc := p.parseDirectivesOrEmpty()
+	var body []ast2.SchemaInternalExpression
+	if p.preValueCheck(0, "{") {
+		body = p.parseSchemaBody()
+	}
+	return &ast2.ExtendSchemaExpression{direc, body}
+}
+
+func (p *Parser) parseExtendScalar() ast2.DefinitionExpression {
+	validateTokenValue(p.pop(), "extend")
+	validateTokenValue(p.pop(), "scalar")
+	n := p.parseName()
+	d := p.parseDirectives()
+	return &ast2.ExtendScalarExpression{n, d}
+}
+
+func (p *Parser) parseExtendEnum() ast2.DefinitionExpression {
+	validateTokenValue(p.pop(), "extend")
+	validateTokenValue(p.pop(), "enum")
+	n := p.parseName()
+	d := p.parseDirectives()
+	var body []ast2.EnumInternalExpression
+	if p.preValueCheck(0, "{") {
+		body = p.parseEnumBody()
+	}
+	return &ast2.ExtendEnumExpression{
+		n, d, body,
+	}
+}
+
+func (p *Parser) parseExtendObject() ast2.DefinitionExpression {
+	validateTokenValue(p.pop(), "extend")
+	validateTokenValue(p.pop(), "type")
+	n := p.parseName()
+	exp := p.parseImplementsOrEmpty()
+	d := p.parseDirectives()
+	if p.preValueCheck(0, "{") {
+		exp = append(exp, p.parseObjectBody()...)
+	}
+	return &ast2.ExtendObjectExpression{n, d, exp}
 }
 
 func (p *Parser) parseInput() ast2.DefinitionExpression {
@@ -140,7 +254,17 @@ func (p *Parser) parseUnion() ast2.DefinitionExpression {
 	validateTokenValue(t, "union")
 	n := p.parseName()
 	directives := p.parseDirectivesOrEmpty()
-	t = p.pop()
+	body := p.parseUnionBody()
+	return &ast2.DefineUnionExpression{
+		DescriptionExpression: desc,
+		NameExpression:        n,
+		DirectiveExpressions:  directives,
+		UnionExpression:       body,
+	}
+}
+
+func (p *Parser) parseUnionBody() []ast2.UnionInternalExpression {
+	t := p.pop()
 	validateTokenValue(t, "=")
 	if p.preValueCheck(0, "|") {
 		_ = p.pop()
@@ -151,12 +275,7 @@ func (p *Parser) parseUnion() ast2.DefinitionExpression {
 		_ = p.pop()
 		ts = append(ts, &ast2.DefineUnionMemberExpression{p.parseTypeRef()})
 	}
-	return &ast2.DefineUnionExpression{
-		DescriptionExpression: desc,
-		NameExpression:        n,
-		DirectiveExpressions:  directives,
-		UnionExpression:       ts,
-	}
+	return ts
 }
 
 func (p *Parser) parseInterface() ast2.DefinitionExpression {
@@ -165,19 +284,24 @@ func (p *Parser) parseInterface() ast2.DefinitionExpression {
 	validateTokenValue(t, "interface")
 	n := p.parseName()
 	directives := p.parseDirectivesOrEmpty()
-	t = p.pop()
+	body := p.parseInterfaceBody()
+	return &ast2.DefineInterfaceExpression{
+		DescriptionExpression: desc,
+		NameExpression:        n,
+		DirectiveExpressions:  directives,
+		InterfaceExpression:   body,
+	}
+}
+
+func (p *Parser) parseInterfaceBody() []ast2.InterfaceInternalExpression {
+	t := p.pop()
 	validateTokenValue(t, "{")
 	var exps []ast2.InterfaceInternalExpression
 	for !p.preValueCheck(0, "}") {
 		exps = append(exps, p.parseInterfaceField())
 	}
 	_ = p.pop()
-	return &ast2.DefineInterfaceExpression{
-		DescriptionExpression: desc,
-		NameExpression:        n,
-		DirectiveExpressions:  directives,
-		InterfaceExpression:   exps,
-	}
+	return exps
 }
 
 func (p *Parser) parseType() ast2.DefinitionExpression {
@@ -187,18 +311,25 @@ func (p *Parser) parseType() ast2.DefinitionExpression {
 	n := p.parseName()
 	exps := p.parseImplementsOrEmpty()
 	directives := p.parseDirectivesOrEmpty()
-	t = p.pop()
-	validateTokenValue(t, "{")
-	for !p.preValueCheck(0, "}") {
-		exps = append(exps, p.parseObjectField())
-	}
-	_ = p.pop()
+	exps = append(exps, p.parseObjectBody()...)
+
 	return &ast2.DefineObjectExpression{
 		DescriptionExpression: desc,
 		NameExpression:        n,
 		DirectiveExpressions:  directives,
 		ObjectExpression:      exps,
 	}
+}
+
+func (p *Parser) parseObjectBody() []ast2.ObjectInternalExpression {
+	var exps []ast2.ObjectInternalExpression
+	t := p.pop()
+	validateTokenValue(t, "{")
+	for !p.preValueCheck(0, "}") {
+		exps = append(exps, p.parseObjectField())
+	}
+	_ = p.pop()
+	return exps
 }
 
 func (p *Parser) parseInterfaceField() ast2.InterfaceInternalExpression {
@@ -292,7 +423,18 @@ func (p *Parser) parseEnum() ast2.DefinitionExpression {
 	validateTokenValue(t, "enum")
 	name := p.parseName()
 	directives := p.parseDirectivesOrEmpty()
-	t = p.pop()
+	values := p.parseEnumBody()
+
+	return &ast2.DefineEnumExpression{
+		DescriptionExpression: desc,
+		NameExpression:        name,
+		DirectiveExpressions:  directives,
+		EnumExpression:        values,
+	}
+}
+
+func (p *Parser) parseEnumBody() []ast2.EnumInternalExpression {
+	t := p.pop()
 	validateTokenValue(t, "{")
 	var values []ast2.EnumInternalExpression
 	for !p.preValueCheck(0, "}") {
@@ -306,13 +448,9 @@ func (p *Parser) parseEnum() ast2.DefinitionExpression {
 		})
 	}
 	_ = p.pop()
-	return &ast2.DefineEnumExpression{
-		DescriptionExpression: desc,
-		NameExpression:        name,
-		DirectiveExpressions:  directives,
-		EnumExpression:        values,
-	}
+	return values
 }
+
 func (p *Parser) parseScalar() ast2.DefinitionExpression {
 	desc := p.parseDescriptionOrEmpty()
 	t := p.pop()
@@ -338,7 +476,14 @@ func (p *Parser) parseSchema() ast2.DefinitionExpression {
 	t := p.pop()
 	validateTokenValue(t, "schema")
 	directives := p.parseDirectivesOrEmpty()
-	t = p.pop()
+	exp := p.parseSchemaBody()
+	return &ast2.DefineSchemaExpression{
+		Expressions: exp, DirectiveExpressions: directives,
+	}
+}
+
+func (p *Parser) parseSchemaBody() []ast2.SchemaInternalExpression {
+	t := p.pop()
 	validateTokenValue(t, "{")
 	t = p.pop()
 	var exp []ast2.SchemaInternalExpression
@@ -362,16 +507,29 @@ func (p *Parser) parseSchema() ast2.DefinitionExpression {
 		}
 		t = p.pop()
 	}
-	if t.Value() != "}" {
-		unexpectedToken(t)
-	}
-	return &ast2.DefineSchemaExpression{
-		Expressions: exp, DirectiveExpressions: directives,
-	}
+	return exp
 }
 
 func (p *Parser) parseDirectivesOrEmpty() []ast2.DirectiveExpression {
 	var directves []ast2.DirectiveExpression
+	for p.preValueCheck(0, "@") {
+		_ = p.pop()
+		name := p.parseName()
+		args := map[string]ast2.ValueExpression{}
+		if p.preValueCheck(0, "(") {
+			args = p.parseDirectiveArgs()
+		}
+		directves = append(
+			directves,
+			&ast2.DirectiveExpressionImpl{name.Eval(), args},
+		)
+	}
+	return directves
+}
+
+func (p *Parser) parseDirectives() []ast2.DirectiveExpression {
+	var directves []ast2.DirectiveExpression
+	validateTokenValue(p.prefetch(0), "@")
 	for p.preValueCheck(0, "@") {
 		_ = p.pop()
 		name := p.parseName()
@@ -383,6 +541,7 @@ func (p *Parser) parseDirectivesOrEmpty() []ast2.DirectiveExpression {
 	}
 	return directves
 }
+
 
 func (p *Parser) parseDirectiveArgs() map[string]ast2.ValueExpression {
 	args := map[string]ast2.ValueExpression{}
@@ -497,21 +656,17 @@ func validateToken(token *token.Token, predicate func(t *token.Token) bool) {
 
 func unexpectedToken(t *token.Token) {
 	l, c := t.LineCol()
-	log.Printf("unexpected token '%s' at line %d, col %d", t.Value(), l, c)
-	panic(errors.New(""))
-
+	log.Fatalf("unexpected token '%s' at line %d, col %d", t.Value(), l, c)
 }
 
 func (p *Parser) pop() *token.Token {
 	t := p.lexer.Pop()
-	log.Printf("%+v", t)
 	assertNotNil(t)
 	return t
 }
 
 func (p *Parser) popOrNil() *token.Token {
 	t := p.lexer.Pop()
-	log.Printf("%+v", t)
 	return t
 }
 
