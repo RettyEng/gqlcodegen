@@ -553,8 +553,10 @@ func (p *Parser) parseDirectives() []ast.DirectiveExpression {
 
 func (p *Parser) parseDirectiveArgs() map[string]ast.ValueExpression {
 	args := map[string]ast.ValueExpression{}
+	if ! p.preValueCheck(0, "(") {
+		return args
+	}
 	t := p.pop()
-	validateTokenValue(t, "(")
 	t = p.pop()
 	for t.Value() != ")" {
 		validateTokenType(t, token.TypeName)

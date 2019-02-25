@@ -11,6 +11,8 @@ import (
      """
      This is truck
      """
+   Directives:
+     @special()
 */
 type TruckResolver interface {
 	Maker() maker.Maker
@@ -23,4 +25,7 @@ type TruckResolver interface {
 	*/
 	Number() scalar.RegistrationNumber
 	Capacity() int
+
+	// Return value of EnginePower is nullable
+	EnginePower() *int
 }

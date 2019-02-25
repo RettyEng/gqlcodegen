@@ -51,10 +51,16 @@ type Truck {
     capacity: Int!
 }
 
+extend type Truck @special {
+    enginePower: Int
+}
+
 type Trailer implements & Foo {
     length: Int!
     capacity: Int!
 }
+
+extend type Trailer implements Vehicle
 
 type Driver implements Hoge & Fuga{
     licenceNumber: String # Some drivers do not have licence
@@ -100,6 +106,9 @@ enum Maker @important() {
     ISUZU @deprecated(reason: "not an euro truck")
 }
 
+"""
+Driver class
+"""
 enum Class {
     ROOKIE
     ELITE
@@ -107,7 +116,7 @@ enum Class {
     KING_OF_ROAD @special
 }
 
-extend enum Class {
+extend enum Class @legend {
     LEGEND
 }
 
