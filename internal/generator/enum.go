@@ -84,9 +84,9 @@ func generateStringMethod(g *Generator, def *gql.Enum) {
 
 func generateFromString(g *Generator, e *gql.Enum) {
 	eName := capitalizeFirst(e.Name)
-	g.Printf("func _%sFromString(str string) (%s, error) {\n", eName, eName)
+	g.Printf("func %sFromString(str string) (%s, error) {\n", eName, eName)
 	g.Printf("for i := 0; i < len(_%s_Index) - 1; i++ {\n", eName)
-	g.Printf("if v := %s(i); str == v.String() {\n",eName)
+	g.Printf("if v := %s(i); str == v.String() {\n", eName)
 	g.Println("return v, nil")
 	g.Println("}")
 	g.Println("}")
@@ -107,7 +107,7 @@ func generateUnmarshalGraphQL(g *Generator, e *gql.Enum) {
 	g.Printf("func (v *%s) UnmarshalGraphQL(input interface{}) error {\n", eName)
 	g.Println("switch input := input.(type) {")
 	g.Println("case string:")
-	g.Printf("value, err := _%sFromString(input)\n", eName)
+	g.Printf("value, err := %sFromString(input)\n", eName)
 	g.Println("if err != nil {")
 	g.Println("return err")
 	g.Println("}")
