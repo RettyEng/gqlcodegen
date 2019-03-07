@@ -7,7 +7,7 @@ SRC:=$(shell find . -name '*.go')
 all: $(BUILD_DIR)/gqlcodegen
 
 install:
-	go install cmd/gqlcodegen.go
+	go install cmd/gqlcodegen/main.go
 
 clean:
 	rm $(STRING_GO)
@@ -28,4 +28,4 @@ $(BUILD_DIR):
 	go generate $^
 
 $(BUILD_DIR)/gqlcodegen: $(BUILD_DIR) $(SRC) $(STRING_GO)
-	go build -o $@ cmd/gqlcodegen.go
+	go build -o $@ cmd/gqlcodegen/main.go

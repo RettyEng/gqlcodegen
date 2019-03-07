@@ -64,7 +64,20 @@ func generateField(g *Generator, f *gql.ObjectField, t *gql.Object) {
 			argStructName(f, t),
 		)
 	}
-	g.Printf(") %s\n", refToString(g, f.Type))
+	g.Printf(") ")
+	hasReturnWithError := false
+	for _, d := range f.Directives {
+		if d.Name == "returnWithError" {
+			hasReturnWithError = true
+			break
+		}
+	}
+	fmt := "%s\n"
+	if hasReturnWithError {
+		fmt = "(%s, error)\n"
+
+	}
+	g.Printf(fmt, refToString(g, f.Type))
 }
 
 func argStructName(f *gql.ObjectField, t *gql.Object) string {
@@ -87,7 +100,13 @@ func refToString(g *Generator, ref *gql.TypeRef) string {
 		}
 		return n
 	}
-	if _, ok := g.Config().TypeSystem.ScalarTypes[n]; ok {
+	if scalar, ok := g.Config().TypeSystem.ScalarTypes[n]; ok {
+		for _, d := range scalar.Directives {
+			if d.Name == "goScalarType" {
+				n = d.Args["name"].Value()
+				break
+			}
+		}
 		n = path.Base(g.Config().ScalarPackage) + "." + capitalizeFirst(n)
 		if ref.IsNullable {
 			n = "*" + n
