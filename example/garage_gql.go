@@ -4,8 +4,8 @@ package example
 import (
 	"context"
 
-	"github.com/RettyInc/gqlcodegen/example/enum/class"
-	"github.com/RettyInc/gqlcodegen/example/scalar"
+	"github.com/RettyEng/gqlcodegen/example/enum/class"
+	"github.com/RettyEng/gqlcodegen/example/scalar"
 )
 
 type GarageResolver interface {

@@ -1,6 +1,6 @@
 package ast
 
-import "github.com/RettyInc/gqlcodegen/gql"
+import "github.com/RettyEng/gqlcodegen/gql"
 
 type UnionInternalExpression interface {
 	Eval(union *gql.Union)

@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/RettyInc/gqlcodegen/gql"
-	"github.com/RettyInc/gqlcodegen/internal/generator"
-	"github.com/RettyInc/gqlcodegen/parser"
+	"github.com/RettyEng/gqlcodegen/gql"
+	"github.com/RettyEng/gqlcodegen/internal/generator"
+	"github.com/RettyEng/gqlcodegen/parser"
 )
 
 var (

@@ -2,8 +2,8 @@
 package example
 
 import (
-	"github.com/RettyInc/gqlcodegen/example/enum/maker"
-	"github.com/RettyInc/gqlcodegen/example/scalar"
+	"github.com/RettyEng/gqlcodegen/example/enum/maker"
+	"github.com/RettyEng/gqlcodegen/example/scalar"
 )
 
 /*

@@ -1,6 +1,6 @@
 package ast
 
-import "github.com/RettyInc/gqlcodegen/gql"
+import "github.com/RettyEng/gqlcodegen/gql"
 
 type SchemaInternalExpression interface {
 	Eval(schema *gql.Schema)

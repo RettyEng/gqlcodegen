@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/RettyInc/gqlcodegen/gql"
+	"github.com/RettyEng/gqlcodegen/gql"
 )
 
 type Package struct {

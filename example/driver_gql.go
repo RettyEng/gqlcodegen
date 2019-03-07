@@ -2,7 +2,7 @@
 package example
 
 import (
-	"github.com/RettyInc/gqlcodegen/example/enum/class"
+	"github.com/RettyEng/gqlcodegen/example/enum/class"
 )
 
 type DriverResolver interface {

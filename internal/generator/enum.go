@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/RettyInc/gqlcodegen/gql"
+	"github.com/RettyEng/gqlcodegen/gql"
 )
 
 func generateEnum(g *Generator, def *gql.Enum) {

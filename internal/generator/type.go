@@ -6,7 +6,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/RettyInc/gqlcodegen/gql"
+	"github.com/RettyEng/gqlcodegen/gql"
 )
 
 func generateType(g *Generator, def *gql.Object) {

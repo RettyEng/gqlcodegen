@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/RettyInc/gqlcodegen/gql"
+	"github.com/RettyEng/gqlcodegen/gql"
 )
 
 func generateComment(

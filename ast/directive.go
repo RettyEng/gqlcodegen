@@ -1,9 +1,9 @@
 package ast
 
 import (
-	"github.com/RettyInc/gqlcodegen/ast/directive"
+	"github.com/RettyEng/gqlcodegen/ast/directive"
 
-	"github.com/RettyInc/gqlcodegen/gql"
+	"github.com/RettyEng/gqlcodegen/gql"
 )
 
 type DirectiveInternalExpression interface {

@@ -3,7 +3,7 @@ package gql
 import (
 	"strings"
 
-	"github.com/RettyInc/gqlcodegen/ast/directive"
+	"github.com/RettyEng/gqlcodegen/ast/directive"
 )
 
 type TypeSystem struct {

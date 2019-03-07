@@ -5,7 +5,7 @@ import (
 	"io"
 	"log"
 
-	"github.com/RettyInc/gqlcodegen/lexer/token"
+	"github.com/RettyEng/gqlcodegen/lexer/token"
 )
 
 type Lexer struct {

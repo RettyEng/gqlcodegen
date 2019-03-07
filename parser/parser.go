@@ -6,12 +6,12 @@ import (
 	"log"
 	"strings"
 
-	"github.com/RettyInc/gqlcodegen/ast/directive"
+	"github.com/RettyEng/gqlcodegen/ast/directive"
 
-	"github.com/RettyInc/gqlcodegen/ast"
-	"github.com/RettyInc/gqlcodegen/gql"
-	"github.com/RettyInc/gqlcodegen/lexer"
-	"github.com/RettyInc/gqlcodegen/lexer/token"
+	"github.com/RettyEng/gqlcodegen/ast"
+	"github.com/RettyEng/gqlcodegen/gql"
+	"github.com/RettyEng/gqlcodegen/lexer"
+	"github.com/RettyEng/gqlcodegen/lexer/token"
 )
 
 type Parser struct {
