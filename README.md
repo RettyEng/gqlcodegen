@@ -13,4 +13,4 @@ See [resolver.go](./example/resolver.go) and [enum.go](./example/enum/enum.go)
 
 ## Custom generator
 If you want to work with another graphql library, you can define custom generator with parser in this package.
-[example](./internal/generator/generator.go)
+[example](./cmd/gqlcodegen/main.go)

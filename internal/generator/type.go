@@ -103,7 +103,7 @@ func refToString(g *Generator, ref *gql.TypeRef) string {
 	if scalar, ok := g.Config().TypeSystem.ScalarTypes[n]; ok {
 		for _, d := range scalar.Directives {
 			if d.Name == "goScalarType" {
-				n = d.Args["name"].Value()
+				n = strings.Trim(d.Args["name"].Value(), `"`)
 				break
 			}
 		}
