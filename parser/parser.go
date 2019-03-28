@@ -213,7 +213,10 @@ func (p *Parser) parseDirective() ast.DefinitionExpression {
 	t = p.pop()
 	validateTokenValue(t, "@")
 	n := p.parseName()
-	args := p.parseDirectiveArgsDefinition()
+	var args []ast.InputValueExpression
+	if p.preValueCheck(0, "(") {
+		args = p.parseDirectiveArgsDefinition()
+	}
 	t = p.pop()
 	validateTokenValue(t, "on")
 	if p.preValueCheck(0, "|") {
