@@ -1,5 +1,5 @@
 BUILD_DIR:=build
-STRINGER_SRC:=$(shell grep -lr '//go:generate stringer' | grep '\.go$$')
+STRINGER_SRC:=$(shell find . -type f -exec grep -l '//go:generate stringer' {} + | grep '.go$$')
 STRING_GO:=$(patsubst %.go, %_string.go, $(STRINGER_SRC))
 SRC:=$(shell find . -name '*.go')
 .PHONY: all clean delete-generated update-example install

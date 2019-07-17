@@ -48,6 +48,16 @@ func generateTypeDefinition(g *Generator, def *gql.Object) {
 	g.Println("}")
 }
 
+func hasDirective(f *gql.ObjectField, directive string) bool {
+	for _, d := range f.Directives {
+		if d.Name == directive {
+			return true
+		}
+	}
+
+	return false
+}
+
 func generateField(g *Generator, f *gql.ObjectField, t *gql.Object) {
 	name := capitalizeFirst(f.Name)
 	if f.Type.IsNullable {
@@ -57,21 +67,20 @@ func generateField(g *Generator, f *gql.ObjectField, t *gql.Object) {
 	} else {
 		generateComment(g, f)
 	}
+
 	g.Printf("%s(", name)
+	argsStr := []string{}
+	if hasDirective(f, "withContext") || len(f.Args) > 0 {
+		argsStr = append(argsStr, "context.Context")
+	}
 	if len(f.Args) > 0 {
-		g.Printf(
-			"context.Context, %s",
-			argStructName(f, t),
-		)
+		argsStr = append(argsStr, argStructName(f, t))
 	}
+	g.Printf(strings.Join(argsStr, ","))
 	g.Printf(") ")
-	hasReturnWithError := false
-	for _, d := range f.Directives {
-		if d.Name == "returnWithError" {
-			hasReturnWithError = true
-			break
-		}
-	}
+
+	hasReturnWithError := hasDirective(f, "returnWithError")
+
 	fmt := "%s\n"
 	if hasReturnWithError {
 		fmt = "(%s, error)\n"
@@ -169,7 +178,7 @@ func generateImportSection(g *Generator, def *gql.Object) {
 	typesMap := typeNameMap(def)
 	needContext := false
 	for _, f := range def.Fields {
-		if len(f.Args) > 0 {
+		if len(f.Args) > 0 || hasDirective(f, "withContext") {
 			needContext = true
 			break
 		}
