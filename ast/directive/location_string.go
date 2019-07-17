@@ -4,6 +4,31 @@ package directive
 
 import "strconv"
 
+func _() {
+	// An "invalid array index" compiler error signifies that the constant values have changed.
+	// Re-run the stringer command to generate them again.
+	var x [1]struct{}
+	_ = x[QUERY-0]
+	_ = x[MUTATION-1]
+	_ = x[SUBSCRIPTION-2]
+	_ = x[FIELD-3]
+	_ = x[FRAGMENT_DEFINITION-4]
+	_ = x[FRAGMENT_SPREAD-5]
+	_ = x[INLINE_FRAGMENT-6]
+	_ = x[VARIABLE_DEFINITION-7]
+	_ = x[SCHEMA-8]
+	_ = x[SCALAR-9]
+	_ = x[OBJECT-10]
+	_ = x[FIELD_DEFINITION-11]
+	_ = x[ARGUMENT_DEFINITION-12]
+	_ = x[INTERFACE-13]
+	_ = x[UNION-14]
+	_ = x[ENUM-15]
+	_ = x[ENUM_VALUE-16]
+	_ = x[INPUT_OBJECT-17]
+	_ = x[INPUT_FIELD_DEFINITION-18]
+}
+
 const _Location_name = "QUERYMUTATIONSUBSCRIPTIONFIELDFRAGMENT_DEFINITIONFRAGMENT_SPREADINLINE_FRAGMENTVARIABLE_DEFINITIONSCHEMASCALAROBJECTFIELD_DEFINITIONARGUMENT_DEFINITIONINTERFACEUNIONENUMENUM_VALUEINPUT_OBJECTINPUT_FIELD_DEFINITION"
 
 var _Location_index = [...]uint8{0, 5, 13, 25, 30, 49, 64, 79, 98, 104, 110, 116, 132, 151, 160, 165, 169, 179, 191, 213}

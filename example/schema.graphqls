@@ -65,7 +65,7 @@ extend type Trailer implements Vehicle
 type Driver implements Hoge & Fuga{
     licenceNumber: String # Some drivers do not have licence
     name: String!
-    middleName: String
+    middleName: String @withContext()
     familyName: String!
     isOnDuty: Boolean!
     class: Class!

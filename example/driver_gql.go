@@ -11,8 +11,12 @@ type DriverResolver interface {
 	LicenceNumber() *string
 	Name() string
 
+	/*
+	   Directives:
+	     @withContext()
+	*/
 	// Return value of MiddleName is nullable
-	MiddleName() *string
+	MiddleName(context.Context) *string
 	FamilyName() string
 	IsOnDuty() bool
 	Class() class.Class
