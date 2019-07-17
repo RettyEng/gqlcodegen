@@ -178,7 +178,7 @@ func generateImportSection(g *Generator, def *gql.Object) {
 	typesMap := typeNameMap(def)
 	needContext := false
 	for _, f := range def.Fields {
-		if len(f.Args) > 0 {
+		if len(f.Args) > 0 || hasDirective(f, "withContext") {
 			needContext = true
 			break
 		}

@@ -2,6 +2,8 @@
 package example
 
 import (
+	"context"
+
 	"github.com/RettyEng/gqlcodegen/example/enum/class"
 )
 
